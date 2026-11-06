@@ -99,8 +99,8 @@ export const FeaturedProducts: React.FC<FeaturedProductsProps> = ({
         </div>
       </div>
 
-      {/* 8 Product Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      {/* 8 Product Cards Grid (2 columns on mobile for optimal e-commerce shopping) */}
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
         {filteredProducts.map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}

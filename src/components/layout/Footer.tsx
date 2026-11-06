@@ -78,7 +78,7 @@ export const Footer: React.FC = () => {
               <li><a href="#all-products" className="hover:text-harvest-400 transition-colors">All Products</a></li>
               <li><a href="#latest" className="hover:text-harvest-400 transition-colors">Latest Arrivals</a></li>
               <li><a href="#offers" className="hover:text-harvest-400 transition-colors">Exclusive Offers</a></li>
-              <li><a href="#why-us" className="hover:text-harvest-400 transition-colors">Why Choose Us</a></li>
+              <li><a href="#about" className="hover:text-harvest-400 transition-colors">About Our Farms</a></li>
               <li><a href="#recipes" className="hover:text-harvest-400 transition-colors">Pantry Recipes & Stories</a></li>
             </ul>
           </div>

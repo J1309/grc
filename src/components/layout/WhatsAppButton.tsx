@@ -6,7 +6,7 @@ export const WhatsAppButton: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
-    <div className="fixed bottom-6 left-6 z-40">
+    <div className="fixed bottom-4 left-4 sm:bottom-6 sm:left-6 z-40">
       <AnimatePresence>
         {isOpen && (
           <motion.div

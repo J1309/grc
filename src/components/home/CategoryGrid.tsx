@@ -52,7 +52,7 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({
             <div
               key={cat.id}
               onClick={() => onSelectCategory(cat.slug)}
-              className={`group relative rounded-2xl p-4 sm:p-5 flex flex-col items-center text-center cursor-pointer transition-all duration-300 border ${
+              className={`group relative rounded-2xl p-3 sm:p-5 flex flex-col items-center text-center cursor-pointer transition-all duration-300 border ${
                 isSelected
                   ? 'border-forest-800 bg-forest-50/80 shadow-md ring-2 ring-forest-800/20'
                   : 'border-stone-200/80 bg-white hover:border-forest-600/60 shadow-card-soft hover:shadow-card-hover'
@@ -60,7 +60,7 @@ export const CategoryGrid: React.FC<CategoryGridProps> = ({
               style={{ backgroundColor: isSelected ? undefined : cat.bgColor }}
             >
               {/* Category Image Circle / Rounded Container */}
-              <div className="relative w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden mb-3.5 shadow-xs border border-white/80 group-hover:scale-105 transition-transform duration-300 bg-white">
+              <div className="relative w-20 h-20 sm:w-28 sm:h-28 rounded-2xl overflow-hidden mb-2.5 sm:mb-3.5 shadow-xs border border-white/80 group-hover:scale-105 transition-transform duration-300 bg-white">
                 <img
                   src={cat.image}
                   alt={cat.name}

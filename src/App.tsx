@@ -16,7 +16,6 @@ import { QuickViewModal } from './components/product/QuickViewModal'
 import { ToastContainer } from './components/ui/ToastContainer'
 import { ProductCard } from './components/product/ProductCard'
 import { PRODUCTS, CATEGORIES } from './data/products'
-import { Agentation } from 'agentation'
 
 const Storefront: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('')
@@ -129,9 +128,6 @@ const Storefront: React.FC = () => {
 
       {/* Floating Action Notifications */}
       <ToastContainer />
-
-      {/* Agentation Visual Feedback & Annotation Toolbar */}
-      <Agentation />
     </div>
   )
 }

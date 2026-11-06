@@ -2,23 +2,23 @@ import React from 'react'
 
 interface BrandLogoProps {
   className?: string
-  markSize?: number
+  markSize?: number | string
   showText?: boolean
   subtext?: string
 }
 
 export const BrandLogo: React.FC<BrandLogoProps> = ({
   className = '',
-  markSize = 48,
+  markSize,
   showText = true,
   subtext = 'Fresh Supermarket',
 }) => {
   return (
-    <div className={`flex items-center gap-3.5 select-none ${className}`}>
+    <div className={`flex items-center gap-2.5 sm:gap-3.5 select-none ${className}`}>
       {/* High-Definition Vector Brand Mark */}
       <div 
-        className="shrink-0 relative group-hover:scale-105 transition-transform duration-300 drop-shadow-md"
-        style={{ width: markSize, height: markSize }}
+        className="shrink-0 relative group-hover:scale-105 transition-transform duration-300 drop-shadow-md w-9 h-9 sm:w-11 sm:h-11"
+        style={markSize ? { width: markSize, height: markSize } : undefined}
       >
         <svg
           viewBox="0 0 100 100"
@@ -166,16 +166,16 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
       {showText && (
         <div className="flex flex-col">
           <div className="flex items-baseline tracking-tight">
-            <span className="font-black text-2xl sm:text-[27px] text-white leading-none tracking-tight">
+            <span className="font-black text-xl sm:text-[26px] text-white leading-none tracking-tight">
               Grocery
             </span>
-            <span className="font-black text-2xl sm:text-[27px] text-[#FFC727] leading-none tracking-tight">
+            <span className="font-black text-xl sm:text-[26px] text-[#FFC727] leading-none tracking-tight">
               Cart
             </span>
           </div>
-          <div className="flex items-center gap-1.5 mt-1">
-            <span className="h-[2px] w-2.5 bg-[#FFC727]/80 rounded-full"></span>
-            <span className="text-[10px] tracking-[0.2em] text-emerald-300 font-bold uppercase">
+          <div className="flex items-center gap-1.5 mt-0.5 sm:mt-1">
+            <span className="h-[2px] w-2 sm:w-2.5 bg-[#FFC727]/80 rounded-full"></span>
+            <span className="text-[9px] sm:text-[10px] tracking-[0.16em] sm:tracking-[0.2em] text-emerald-300 font-bold uppercase">
               {subtext}
             </span>
           </div>

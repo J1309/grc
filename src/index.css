@@ -60,3 +60,12 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
+/* Hide scrollbar for seamless horizontal swiping on mobile */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+

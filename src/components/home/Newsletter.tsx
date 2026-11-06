@@ -19,7 +19,7 @@ export const Newsletter: React.FC = () => {
   }
 
   return (
-    <section className="relative w-full py-20 sm:py-28 overflow-hidden border-t border-stone-200/80">
+    <section className="relative w-full py-14 sm:py-24 overflow-hidden border-t border-stone-200/80">
       {/* Minimalist Aesthetic Background Image */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <img
@@ -35,22 +35,22 @@ export const Newsletter: React.FC = () => {
       <div className="relative z-10 max-w-3xl mx-auto px-4 text-center flex flex-col items-center">
         
         {/* Subtle Icon Accent */}
-        <div className="w-11 h-11 rounded-full bg-white/95 text-forest-850 flex items-center justify-center mb-3.5 border border-forest-200/60 shadow-sm backdrop-blur-xs">
-          <Mail className="w-4.5 h-4.5 text-forest-800" />
+        <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/95 text-forest-850 flex items-center justify-center mb-3 sm:mb-3.5 border border-forest-200/60 shadow-sm backdrop-blur-xs">
+          <Mail className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-forest-800" />
         </div>
 
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-forest-100/70 border border-forest-250/50 mb-2.5">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-forest-100/70 border border-forest-250/50 mb-2 sm:mb-2.5">
           <Sparkles className="w-3 h-3 text-forest-700" />
-          <span className="text-[11px] uppercase font-bold tracking-[0.2em] text-forest-900">
+          <span className="text-[10px] sm:text-[11px] uppercase font-bold tracking-[0.2em] text-forest-900">
             Weekly Farm Dispatch
           </span>
         </div>
 
-        <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-stone-900 tracking-tight mb-3">
+        <h2 className="text-xl sm:text-3xl md:text-4xl font-extrabold text-stone-900 tracking-tight mb-2 sm:mb-3">
           Fresh Arrivals & Pantry Recipes to Your Inbox
         </h2>
 
-        <p className="text-stone-700 text-xs sm:text-sm max-w-lg mb-8 leading-relaxed font-normal">
+        <p className="text-stone-700 text-xs sm:text-sm max-w-lg mb-6 sm:mb-8 leading-relaxed font-normal">
           Join 12,000+ home cooks receiving seasonal organic produce guides, exclusive subscriber discounts, and chef-crafted pantry recipes.
         </p>
 
@@ -62,20 +62,20 @@ export const Newsletter: React.FC = () => {
         ) : (
           <form
             onSubmit={handleSubmit}
-            className="w-full max-w-md flex flex-col sm:flex-row items-center gap-2 sm:gap-0 bg-white/95 backdrop-blur-md rounded-full p-1.5 shadow-md border border-stone-200/90 focus-within:border-forest-700 focus-within:ring-2 focus-within:ring-forest-600/20 transition-all"
+            className="w-full max-w-md flex flex-col sm:flex-row items-center gap-2 sm:gap-0 bg-white/95 backdrop-blur-md rounded-2xl sm:rounded-full p-1.5 shadow-md border border-stone-200/90 focus-within:border-forest-700 focus-within:ring-2 focus-within:ring-forest-600/20 transition-all"
           >
             <input
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email address..."
-              className="w-full h-11 px-5 rounded-full text-stone-800 placeholder-stone-400 text-sm focus:outline-none bg-transparent"
+              className="w-full h-11 px-4 sm:px-5 rounded-xl sm:rounded-full text-stone-800 placeholder-stone-400 text-xs sm:text-sm focus:outline-none bg-transparent"
               required
             />
 
             <button
               type="submit"
-              className="w-full sm:w-auto px-7 py-2.5 rounded-full bg-forest-900 hover:bg-forest-850 text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-colors shrink-0 shadow-xs cursor-pointer"
+              className="w-full sm:w-auto px-7 py-2.5 rounded-xl sm:rounded-full bg-forest-900 hover:bg-forest-850 text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-colors shrink-0 shadow-xs cursor-pointer"
             >
               <span>Subscribe</span>
               <Send className="w-3.5 h-3.5" />

@@ -38,8 +38,8 @@ export const LatestArrivals: React.FC<LatestArrivalsProps> = ({ products, onView
         </button>
       </div>
 
-      {/* 4-Column Product Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      {/* 4-Column Product Grid (2 columns on mobile for optimal e-commerce shopping) */}
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
         {latestItems.map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}

@@ -18,12 +18,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const isWishlisted = isInWishlist(product.id)
 
   return (
-    <div className="group relative bg-white rounded-2xl border border-stone-200/90 shadow-card-soft hover:shadow-card-hover transition-all duration-300 flex flex-col overflow-hidden">
+    <div className="group relative bg-white rounded-xl sm:rounded-2xl border border-stone-200/90 shadow-card-soft hover:shadow-card-hover transition-all duration-300 flex flex-col overflow-hidden">
       
       {/* Top Bar inside Card: Discount Pill + Wishlist button */}
-      <div className="absolute top-3 left-3 right-3 z-10 flex items-center justify-between pointer-events-none">
+      <div className="absolute top-2 left-2 right-2 sm:top-3 sm:left-3 sm:right-3 z-10 flex items-center justify-between pointer-events-none">
         {product.discount ? (
-          <span className="pointer-events-auto inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-harvest-400 text-stone-900 shadow-xs tracking-tight">
+          <span className="pointer-events-auto inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-extrabold bg-harvest-400 text-stone-900 shadow-xs tracking-tight">
             {product.discount}
           </span>
         ) : (
@@ -36,14 +36,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             e.stopPropagation()
             toggleWishlist(product)
           }}
-          className={`pointer-events-auto w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+          className={`pointer-events-auto w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all cursor-pointer ${
             isWishlisted
               ? 'bg-rose-50 text-rose-500 shadow-sm'
               : 'bg-white/90 hover:bg-white text-stone-400 hover:text-rose-500 shadow-xs'
           }`}
           title={isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist'}
         >
-          <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-rose-500' : ''}`} />
+          <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isWishlisted ? 'fill-rose-500' : ''}`} />
         </button>
       </div>
 
@@ -59,8 +59,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           loading="lazy"
         />
 
-        {/* Quick View Button on Hover */}
-        <div className="absolute inset-0 bg-stone-900/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+        {/* Quick View Button on Hover (Desktop) */}
+        <div className="absolute inset-0 bg-stone-900/20 opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex items-center justify-center">
           <button
             type="button"
             onClick={(e) => {
@@ -75,17 +75,17 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       </div>
 
       {/* Card Body */}
-      <div className="p-4 flex-1 flex flex-col justify-between">
+      <div className="p-2.5 sm:p-4 flex-1 flex flex-col justify-between">
         <div>
           {/* Rating & Unit Row */}
-          <div className="flex items-center justify-between text-xs text-stone-500 mb-1.5">
-            <div className="flex items-center gap-1 text-harvest-500 font-semibold">
-              <Star className="w-3.5 h-3.5 fill-harvest-400 text-harvest-400" />
-              <span className="text-stone-800 text-xs">{product.rating}</span>
-              <span className="text-stone-400 font-normal">({product.reviewsCount})</span>
+          <div className="flex items-center justify-between text-[11px] sm:text-xs text-stone-500 mb-1 sm:mb-1.5">
+            <div className="flex items-center gap-0.5 sm:gap-1 text-harvest-500 font-semibold">
+              <Star className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-harvest-400 text-harvest-400" />
+              <span className="text-stone-800 text-[11px] sm:text-xs">{product.rating}</span>
+              <span className="text-stone-400 font-normal hidden xs:inline">({product.reviewsCount})</span>
             </div>
 
-            <span className="text-[11px] font-medium text-stone-500 bg-stone-100 px-2 py-0.5 rounded-md">
+            <span className="text-[10px] sm:text-[11px] font-medium text-stone-500 bg-stone-100 px-1.5 sm:px-2 py-0.5 rounded-md truncate max-w-[70px] sm:max-w-none">
               {product.unit}
             </span>
           </div>
@@ -93,26 +93,26 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           {/* Product Name */}
           <h3
             onClick={() => setQuickViewProduct(product)}
-            className="font-bold text-sm text-stone-800 group-hover:text-forest-900 transition-colors line-clamp-1 cursor-pointer mb-1"
+            className="font-bold text-xs sm:text-sm text-stone-800 group-hover:text-forest-900 transition-colors line-clamp-1 cursor-pointer mb-0.5 sm:mb-1"
             title={product.name}
           >
             {product.name}
           </h3>
 
           {/* Category / Origin */}
-          <p className="text-[11px] text-stone-400 mb-3 truncate">
+          <p className="text-[10px] sm:text-[11px] text-stone-400 mb-2 sm:mb-3 truncate">
             {product.origin || product.category}
           </p>
         </div>
 
         {/* Price & Action Row */}
         <div>
-          <div className="flex items-baseline gap-2 mb-3">
-            <span className="text-lg font-extrabold text-forest-900 tabular-nums">
+          <div className="flex items-baseline gap-1.5 sm:gap-2 mb-2 sm:mb-3">
+            <span className="text-sm sm:text-lg font-extrabold text-forest-900 tabular-nums">
               {formatPrice(product.price)}
             </span>
             {product.originalPrice && (
-              <span className="text-xs text-stone-400 line-through tabular-nums">
+              <span className="text-[10px] sm:text-xs text-stone-400 line-through tabular-nums">
                 {formatPrice(product.originalPrice)}
               </span>
             )}
@@ -120,25 +120,25 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
           {/* Add to Cart or Stepper */}
           {cartItem ? (
-            <div className="flex items-center justify-between bg-forest-50 border border-forest-200 rounded-xl p-1">
+            <div className="flex items-center justify-between bg-forest-50 border border-forest-200 rounded-lg sm:rounded-xl p-0.5 sm:p-1">
               <button
                 type="button"
                 onClick={() => updateQuantity(product.id, cartItem.quantity - 1)}
-                className="w-7 h-7 rounded-lg bg-white text-forest-900 shadow-xs flex items-center justify-center hover:bg-forest-100 transition-colors cursor-pointer"
+                className="w-6 h-6 sm:w-7 sm:h-7 rounded-md sm:rounded-lg bg-white text-forest-900 shadow-xs flex items-center justify-center hover:bg-forest-100 transition-colors cursor-pointer"
                 title="Decrease quantity"
               >
-                <Minus className="w-3.5 h-3.5" />
+                <Minus className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
               </button>
-              <span className="text-xs font-bold text-forest-900 tabular-nums px-2">
-                {cartItem.quantity} in cart
+              <span className="text-[11px] sm:text-xs font-bold text-forest-900 tabular-nums px-1 sm:px-2">
+                {cartItem.quantity} <span className="hidden xs:inline">in cart</span>
               </span>
               <button
                 type="button"
                 onClick={() => updateQuantity(product.id, cartItem.quantity + 1)}
-                className="w-7 h-7 rounded-lg bg-forest-900 text-white shadow-xs flex items-center justify-center hover:bg-forest-800 transition-colors cursor-pointer"
+                className="w-6 h-6 sm:w-7 sm:h-7 rounded-md sm:rounded-lg bg-forest-900 text-white shadow-xs flex items-center justify-center hover:bg-forest-800 transition-colors cursor-pointer"
                 title="Increase quantity"
               >
-                <Plus className="w-3.5 h-3.5" />
+                <Plus className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
               </button>
             </div>
           ) : (
@@ -146,9 +146,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               whileTap={{ scale: 0.96 }}
               type="button"
               onClick={() => addToCart(product, 1)}
-              className="w-full py-2.5 px-3 rounded-xl border border-stone-200 group-hover:border-forest-850 group-hover:bg-forest-900 group-hover:text-white bg-white text-forest-900 font-semibold text-xs flex items-center justify-center gap-1.5 transition-all shadow-2xs hover:shadow-sm cursor-pointer"
+              className="w-full py-1.5 sm:py-2.5 px-2 sm:px-3 rounded-lg sm:rounded-xl border border-stone-200 group-hover:border-forest-850 group-hover:bg-forest-900 group-hover:text-white bg-white text-forest-900 font-semibold text-[11px] sm:text-xs flex items-center justify-center gap-1 sm:gap-1.5 transition-all shadow-2xs hover:shadow-sm cursor-pointer"
             >
-              <Plus className="w-3.5 h-3.5" /> Add to Cart
+              <Plus className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> <span>Add<span className="hidden xs:inline"> to Cart</span></span>
             </motion.button>
           )}
         </div>

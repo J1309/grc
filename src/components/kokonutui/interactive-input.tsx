@@ -51,7 +51,7 @@ export const InteractiveInput: React.FC<InteractiveInputProps> = ({
             }
           }}
           placeholder={placeholder}
-          className="w-full h-12 sm:h-13 pl-6 pr-26 rounded-full bg-white text-stone-800 placeholder-stone-400 text-sm sm:text-[15px] focus:outline-none focus:ring-2 focus:ring-harvest-400 border border-white/20 shadow-md transition-all"
+          className="w-full h-11 sm:h-13 pl-4 sm:pl-6 pr-20 sm:pr-26 rounded-full bg-white text-stone-800 placeholder-stone-400 text-xs sm:text-[15px] focus:outline-none focus:ring-2 focus:ring-harvest-400 border border-white/20 shadow-md transition-all"
         />
 
         <div className="absolute right-2 flex items-center gap-2">
