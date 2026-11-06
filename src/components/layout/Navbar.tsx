@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useCart } from '@/context/CartContext'
 import { useWishlist } from '@/context/WishlistContext'
 import { InteractiveInput } from '../kokonutui/interactive-input'
+import { BrandLogo } from './BrandLogo'
 import { formatPrice } from '@/lib/utils'
 import { PRODUCTS } from '@/data/products'
 
@@ -41,7 +42,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       <div className="bg-forest-900 text-white px-4 sm:px-8 py-4 sm:py-5 border-b border-forest-800/80">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 md:gap-8">
           
-          {/* Clean & Minimalist Brand Logo */}
+          {/* Bespoke Clean & Minimalist Brand Logo */}
           <a
             href="#"
             className="flex items-center gap-3 shrink-0 group focus:outline-none"
@@ -52,19 +53,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               window.scrollTo({ top: 0, behavior: 'smooth' })
             }}
           >
-            {/* Minimalist circular mark */}
-            <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full bg-forest-950 border border-emerald-500/40 flex items-center justify-center shadow-inner group-hover:border-harvest-400 transition-colors">
-              <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6 text-harvest-400 group-hover:scale-105 transition-transform" />
-            </div>
-
-            <div className="flex flex-col">
-              <span className="font-extrabold text-2xl sm:text-3xl tracking-tight text-white leading-none">
-                Grocery<span className="text-[#FFC727]">Cart</span>
-              </span>
-              <span className="text-[10px] tracking-widest text-emerald-300/80 uppercase font-semibold mt-0.5">
-                Fresh Supermarket
-              </span>
-            </div>
+            <BrandLogo markSize={48} subtext="Fresh Supermarket" />
           </a>
 
           {/* Center Search Input with Instant Dropdown */}

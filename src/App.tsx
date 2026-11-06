@@ -7,7 +7,6 @@ import { HeroBanner } from './components/home/HeroBanner'
 import { LatestArrivals } from './components/home/LatestArrivals'
 import { CategoryGrid } from './components/home/CategoryGrid'
 import { FeaturedProducts } from './components/home/FeaturedProducts'
-import { PromoBanner } from './components/home/PromoBanner'
 import { ValueProps } from './components/home/ValueProps'
 import { Newsletter } from './components/home/Newsletter'
 import { Footer } from './components/layout/Footer'
@@ -109,9 +108,6 @@ const Storefront: React.FC = () => {
           selectedCategory={activeCategory}
           onResetCategory={() => setActiveCategory('all')}
         />
-
-        {/* Mid-Page Golden Savings Promo Banner */}
-        <PromoBanner onShopNow={handleShopNow} />
 
         {/* Why Choose Us (5 feature cards) */}
         <ValueProps />

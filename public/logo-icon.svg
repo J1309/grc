@@ -1,6 +1,59 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="none">
-  <rect width="40" height="40" rx="20" fill="#063219" />
-  <path d="M11 13h3.5l3.2 11.2h10.6l2.7-7.2H16.2" stroke="#FFC727" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-  <circle cx="19" cy="27.5" r="1.8" fill="#FFC727"/>
-  <circle cx="27" cy="27.5" r="1.8" fill="#FFC727"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <defs>
+    <linearGradient id="badgeBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#084223"/>
+      <stop offset="100%" stop-color="#021c0e"/>
+    </linearGradient>
+    <linearGradient id="leafGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#22C55E"/>
+      <stop offset="100%" stop-color="#86EFAC"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE047"/>
+      <stop offset="50%" stop-color="#FFC727"/>
+      <stop offset="100%" stop-color="#D97706"/>
+    </linearGradient>
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <!-- Outer Ring Accent & Badge Shield -->
+  <circle cx="50" cy="50" r="47" stroke="url(#goldGrad)" stroke-width="2.5" fill="url(#badgeBg)" filter="url(#softGlow)"/>
+  <circle cx="50" cy="50" r="42" stroke="#166534" stroke-width="1.2" stroke-dasharray="3 2" opacity="0.8"/>
+
+  <!-- Organic Leaves / Sprout rising from produce -->
+  <!-- Left Sprout Leaf -->
+  <path d="M49 46 C44 34, 32 30, 26 34 C25 44, 36 50, 47 48" fill="url(#leafGrad)"/>
+  <path d="M28 35 C36 41, 44 45, 47 47" stroke="#15803D" stroke-width="1" stroke-linecap="round"/>
+
+  <!-- Right Sprout Leaf -->
+  <path d="M49 46 C52 30, 66 22, 75 26 C76 38, 64 47, 51 48" fill="#4ADE80"/>
+  <path d="M74 27 C64 36, 54 44, 50 47" stroke="#15803D" stroke-width="1" stroke-linecap="round"/>
+
+  <!-- Central Stem -->
+  <path d="M50 51 C50 40, 51 28, 52 21" stroke="#FEF08A" stroke-width="2.2" stroke-linecap="round"/>
+
+  <!-- Fresh Produce Accent: Golden Orange / Citrus -->
+  <circle cx="58" cy="41" r="7.5" fill="url(#goldGrad)"/>
+  <path d="M58 33 C60 31, 63 32, 62 34" stroke="#166534" stroke-width="1.5" stroke-linecap="round"/>
+
+  <!-- Golden Shopping Cart Basket Base -->
+  <path d="M22 36 L27.5 36 L37 60 L68 60 L76 41 L31.5 41" 
+        stroke="url(#goldGrad)" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  
+  <!-- Sleek basket interior ribbing -->
+  <line x1="42" y1="44" x2="39" y2="57" stroke="url(#goldGrad)" stroke-width="2" stroke-linecap="round" opacity="0.85"/>
+  <line x1="53" y1="44" x2="51" y2="57" stroke="url(#goldGrad)" stroke-width="2" stroke-linecap="round" opacity="0.85"/>
+  <line x1="64" y1="44" x2="62" y2="57" stroke="url(#goldGrad)" stroke-width="2" stroke-linecap="round" opacity="0.85"/>
+
+  <!-- Sturdy Cart Wheels -->
+  <circle cx="40" cy="69" r="5.5" fill="url(#goldGrad)"/>
+  <circle cx="40" cy="69" r="2.2" fill="#021c0e"/>
+
+  <circle cx="65" cy="69" r="5.5" fill="url(#goldGrad)"/>
+  <circle cx="65" cy="69" r="2.2" fill="#021c0e"/>
+
+  <!-- Four-Point Star Sparkle -->
+  <path d="M74 16 Q74 20 78 20 Q74 20 74 24 Q74 20 70 20 Q74 20 74 16 Z" fill="#FDE047"/>
 </svg>

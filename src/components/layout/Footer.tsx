@@ -1,5 +1,6 @@
 import React from 'react'
 import { ShoppingCart, Phone, Mail, MapPin, Heart, Share2, Globe, MessageSquare } from 'lucide-react'
+import { BrandLogo } from './BrandLogo'
 
 // Clean social SVGs for Facebook, X (Twitter), Instagram, LinkedIn
 const FacebookIcon = () => (
@@ -36,15 +37,8 @@ export const Footer: React.FC = () => {
           
           {/* Col 1: Brand & Bio */}
           <div>
-            <div className="flex items-center gap-2.5 mb-4">
-              <div className="w-10 h-10 rounded-full bg-harvest-400 p-0.5 flex items-center justify-center shadow-md">
-                <div className="w-full h-full rounded-full bg-forest-950 flex items-center justify-center">
-                  <ShoppingCart className="w-5 h-5 text-harvest-400" />
-                </div>
-              </div>
-              <span className="font-extrabold text-2xl text-white tracking-tight">
-                Grocery<span className="text-harvest-400">Cart</span>
-              </span>
+            <div className="mb-4">
+              <BrandLogo markSize={42} subtext="Fresh Supermarket" />
             </div>
 
             <p className="text-xs text-emerald-100/70 leading-relaxed mb-6">
