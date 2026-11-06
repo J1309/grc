@@ -7,7 +7,6 @@ import { HeroBanner } from './components/home/HeroBanner'
 import { LatestArrivals } from './components/home/LatestArrivals'
 import { CategoryGrid } from './components/home/CategoryGrid'
 import { FeaturedProducts } from './components/home/FeaturedProducts'
-import { ValueProps } from './components/home/ValueProps'
 import { Newsletter } from './components/home/Newsletter'
 import { Footer } from './components/layout/Footer'
 import { WhatsAppButton } from './components/layout/WhatsAppButton'
@@ -108,9 +107,6 @@ const Storefront: React.FC = () => {
           selectedCategory={activeCategory}
           onResetCategory={() => setActiveCategory('all')}
         />
-
-        {/* Why Choose Us (5 feature cards) */}
-        <ValueProps />
 
         {/* Newsletter Subscription */}
         <Newsletter />
