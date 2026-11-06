@@ -17,7 +17,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
     <div className={`flex items-center gap-2.5 sm:gap-3.5 select-none ${className}`}>
       {/* High-Definition Vector Brand Mark */}
       <div 
-        className="shrink-0 relative group-hover:scale-105 transition-transform duration-300 drop-shadow-md w-9 h-9 sm:w-11 sm:h-11"
+        className="shrink-0 relative group-hover:scale-105 transition-transform duration-300 drop-shadow-md w-8 h-8 sm:w-11 sm:h-11"
         style={markSize ? { width: markSize, height: markSize } : undefined}
       >
         <svg
@@ -173,7 +173,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
               Cart
             </span>
           </div>
-          <div className="flex items-center gap-1.5 mt-0.5 sm:mt-1">
+          <div className="hidden sm:flex items-center gap-1.5 mt-1">
             <span className="h-[2px] w-2 sm:w-2.5 bg-[#FFC727]/80 rounded-full"></span>
             <span className="text-[9px] sm:text-[10px] tracking-[0.16em] sm:tracking-[0.2em] text-emerald-300 font-bold uppercase">
               {subtext}

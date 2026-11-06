@@ -52,7 +52,7 @@ const Storefront: React.FC = () => {
   }, [activeCategory, searchQuery])
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAF8F5] text-stone-800">
+    <div className="min-h-screen flex flex-col bg-[#FAF8F5] text-stone-800 w-full max-w-full overflow-x-hidden">
       {/* Fixed/Sticky Navigation */}
       <Navbar
         searchQuery={searchQuery}

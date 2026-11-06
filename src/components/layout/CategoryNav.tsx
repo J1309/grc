@@ -26,8 +26,8 @@ export const CategoryNav: React.FC<CategoryNavProps> = ({
   onSelectCategory,
 }) => {
   return (
-    <nav className="w-full bg-white border-b border-stone-200 shadow-xs overflow-x-auto no-scrollbar">
-      <div className="max-w-7xl mx-auto px-4">
+    <nav className="w-full max-w-full bg-white border-b border-stone-200 shadow-xs overflow-x-auto no-scrollbar touch-pan-x">
+      <div className="w-full max-w-7xl mx-auto px-3 sm:px-4">
         <ul className="flex items-center gap-1 sm:gap-2 whitespace-nowrap py-2 text-xs font-semibold tracking-wider text-stone-600">
           {NAV_LINKS.map((link) => {
             const isActive =

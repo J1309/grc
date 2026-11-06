@@ -192,19 +192,19 @@ export const Navbar: React.FC<NavbarProps> = ({
               whileTap={{ scale: 0.95 }}
               type="button"
               onClick={() => setIsCartOpen(true)}
-              className="relative flex items-center gap-1.5 sm:gap-2 px-2.5 sm:pl-3 sm:pr-3.5 py-1.5 sm:py-2 rounded-full bg-forest-850 hover:bg-forest-750 text-white border border-forest-700/80 shadow-sm cursor-pointer transition-colors group"
+              className="relative flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-full bg-forest-850 hover:bg-forest-750 text-white border border-forest-700/80 shadow-sm cursor-pointer transition-colors group shrink-0"
               title="Open Shopping Cart"
             >
               <div className="relative">
-                <ShoppingCart className="w-4.5 h-4.5 sm:w-5 sm:h-5 text-harvest-400 group-hover:scale-110 transition-transform" />
+                <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 text-harvest-400 group-hover:scale-110 transition-transform" />
                 {totalItems > 0 && (
-                  <span className="absolute -top-2 -right-2 min-w-[17px] h-[17px] px-1 bg-harvest-500 text-stone-900 text-[10px] font-extrabold rounded-full flex items-center justify-center shadow">
+                  <span className="absolute -top-2 -right-2 min-w-[16px] h-[16px] px-0.5 bg-harvest-500 text-stone-900 text-[9px] font-extrabold rounded-full flex items-center justify-center shadow">
                     {totalItems}
                   </span>
                 )}
               </div>
               <div className="flex flex-col text-left">
-                <span className="text-[9px] sm:text-[10px] text-emerald-200/90 uppercase tracking-wider font-semibold leading-none hidden xs:inline">Cart</span>
+                <span className="text-[9px] text-emerald-200/90 uppercase tracking-wider font-semibold leading-none hidden sm:inline">Cart</span>
                 <span className="text-xs font-bold text-white tabular-nums leading-tight">
                   {formatPrice(subtotal)}
                 </span>
