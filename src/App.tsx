@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react'
 import { CartProvider } from './context/CartContext'
 import { WishlistProvider } from './context/WishlistContext'
+import { StoreProvider, useStore } from './context/StoreContext'
 import { Navbar } from './components/layout/Navbar'
 import { CategoryNav } from './components/layout/CategoryNav'
 import { HeroBanner } from './components/home/HeroBanner'
@@ -15,9 +16,11 @@ import { CheckoutModal } from './components/cart/CheckoutModal'
 import { QuickViewModal } from './components/product/QuickViewModal'
 import { ToastContainer } from './components/ui/ToastContainer'
 import { ProductCard } from './components/product/ProductCard'
-import { PRODUCTS, CATEGORIES } from './data/products'
+import { AdminDashboard } from './components/admin/AdminDashboard'
+import { CATEGORIES } from './data/products'
 
 const Storefront: React.FC = () => {
+  const { products, currentView, setCurrentView } = useStore()
   const [searchQuery, setSearchQuery] = useState('')
   const [activeCategory, setActiveCategory] = useState('all')
 
@@ -28,7 +31,7 @@ const Storefront: React.FC = () => {
 
   // Filter products by selected category or search query
   const categoryFilteredProducts = useMemo(() => {
-    let result = PRODUCTS
+    let result = products
 
     if (activeCategory && activeCategory !== 'all' && activeCategory !== 'all-products') {
       if (activeCategory === 'offers') {
@@ -49,7 +52,12 @@ const Storefront: React.FC = () => {
     }
 
     return result
-  }, [activeCategory, searchQuery])
+  }, [products, activeCategory, searchQuery])
+
+  // If Admin panel is selected, render Admin Dashboard
+  if (currentView === 'admin') {
+    return <AdminDashboard />
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-[#FAF8F5] text-stone-800 w-full max-w-full overflow-x-hidden">
@@ -84,7 +92,7 @@ const Storefront: React.FC = () => {
 
         {/* Latest Arrivals (4-column grid: Basmati Rice, Atta, Samosa, Garam Masala) */}
         <LatestArrivals
-          products={PRODUCTS}
+          products={products}
           onViewAll={handleShopNow}
         />
 
@@ -134,11 +142,13 @@ const Storefront: React.FC = () => {
 
 export function App() {
   return (
-    <CartProvider>
-      <WishlistProvider>
-        <Storefront />
-      </WishlistProvider>
-    </CartProvider>
+    <StoreProvider>
+      <CartProvider>
+        <WishlistProvider>
+          <Storefront />
+        </WishlistProvider>
+      </CartProvider>
+    </StoreProvider>
   )
 }
 

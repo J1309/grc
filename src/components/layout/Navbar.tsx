@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
-import { ShoppingCart, Heart, User, Sparkles, MapPin, Phone } from 'lucide-react'
+import { ShoppingCart, Heart, User, Sparkles, MapPin, Phone, ShieldCheck } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCart } from '@/context/CartContext'
 import { useWishlist } from '@/context/WishlistContext'
+import { useStore } from '@/context/StoreContext'
 import { InteractiveInput } from '../kokonutui/interactive-input'
 import { BrandLogo } from './BrandLogo'
 import { formatPrice } from '@/lib/utils'
@@ -23,12 +24,13 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const { totalItems, subtotal, setIsCartOpen, setQuickViewProduct } = useCart()
   const { wishlistCount } = useWishlist()
+  const { products, setCurrentView } = useStore()
   const [showAccountDropdown, setShowAccountDropdown] = useState(false)
   const [isSearchFocused, setIsSearchFocused] = useState(false)
 
   // Live filtered preview for the search bar dropdown
   const searchResults = searchQuery.trim()
-    ? PRODUCTS.filter(
+    ? products.filter(
         (p) =>
           p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           p.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -160,6 +162,19 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <a href="#orders" onClick={(e) => { e.preventDefault(); setShowAccountDropdown(false); }} className="block px-3 py-1.5 text-xs text-stone-600 hover:bg-stone-50 rounded-lg">My Orders</a>
                     <a href="#settings" onClick={(e) => { e.preventDefault(); setShowAccountDropdown(false); }} className="block px-3 py-1.5 text-xs text-stone-600 hover:bg-stone-50 rounded-lg">Saved Delivery Addresses</a>
                     <a href="#help" onClick={(e) => { e.preventDefault(); setShowAccountDropdown(false); }} className="block px-3 py-1.5 text-xs text-stone-600 hover:bg-stone-50 rounded-lg">Help Center</a>
+                    <div className="pt-1 mt-1 border-t border-stone-100">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowAccountDropdown(false)
+                          setCurrentView('admin')
+                        }}
+                        className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-forest-900 bg-forest-50 hover:bg-forest-100 rounded-lg transition-colors cursor-pointer text-left"
+                      >
+                        <ShieldCheck className="w-3.5 h-3.5 text-forest-700" />
+                        <span>Admin Dashboard</span>
+                      </button>
+                    </div>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -186,6 +201,17 @@ export const Navbar: React.FC<NavbarProps> = ({
               </div>
               <span className="text-xs font-medium hidden lg:inline">Wishlist</span>
             </a>
+
+            {/* Quick Admin Access Button */}
+            <button
+              type="button"
+              onClick={() => setCurrentView('admin')}
+              className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-forest-800 hover:bg-forest-750 text-white text-xs font-semibold border border-forest-700/80 transition-colors cursor-pointer shadow-xs"
+              title="Open Store Manager Dashboard"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-harvest-400" />
+              <span>Admin</span>
+            </button>
 
             {/* Cart Trigger */}
             <motion.button

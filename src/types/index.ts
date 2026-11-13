@@ -46,3 +46,30 @@ export interface ToastMessage {
   type?: 'success' | 'info' | 'cart'
 }
 
+export type OrderStatus = 'Pending' | 'Packing' | 'Out for Delivery' | 'Completed' | 'Cancelled'
+
+export interface OrderItem {
+  productName: string
+  quantity: number
+  price: number
+  unit: string
+  image?: string
+}
+
+export interface Order {
+  id: string
+  customerName: string
+  customerEmail: string
+  customerPhone: string
+  address: string
+  city: string
+  zip: string
+  items: OrderItem[]
+  itemsCount: number
+  total: number
+  deliverySlot: string
+  paymentMethod: string
+  status: OrderStatus
+  createdAt: string
+}
+

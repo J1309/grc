@@ -80,6 +80,7 @@ export const Footer: React.FC = () => {
               <li><a href="#offers" className="hover:text-harvest-400 transition-colors">Exclusive Offers</a></li>
               <li><a href="#about" className="hover:text-harvest-400 transition-colors">About Our Farms</a></li>
               <li><a href="#recipes" className="hover:text-harvest-400 transition-colors">Pantry Recipes & Stories</a></li>
+              <li><a href="#admin" className="text-harvest-400 font-bold hover:underline">Store Admin Panel</a></li>
             </ul>
           </div>
 

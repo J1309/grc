@@ -3,10 +3,12 @@ import { X, CheckCircle, Truck, ShieldCheck, CreditCard, Banknote, Clock, ArrowR
 import { motion } from 'framer-motion'
 import confetti from 'canvas-confetti'
 import { useCart } from '@/context/CartContext'
+import { useStore } from '@/context/StoreContext'
 import { formatPrice } from '@/lib/utils'
 
 export const CheckoutModal: React.FC = () => {
   const { isCheckoutOpen, setIsCheckoutOpen, cart, subtotal, discount, deliveryFee, total, clearCart } = useCart()
+  const { addOrder } = useStore()
 
   const [step, setStep] = useState<'details' | 'success'>('details')
   const [formData, setFormData] = useState({
@@ -28,6 +30,30 @@ export const CheckoutModal: React.FC = () => {
     const generatedId = 'GC-' + Math.floor(100000 + Math.random() * 900000)
     setOrderId(generatedId)
     setStep('success')
+
+    // Add to real store orders for Admin Panel tracking
+    addOrder({
+      id: generatedId,
+      customerName: formData.name,
+      customerEmail: formData.email,
+      customerPhone: formData.phone,
+      address: formData.address,
+      city: formData.city,
+      zip: formData.zip,
+      items: cart.map((i) => ({
+        productName: i.product.name,
+        quantity: i.quantity,
+        price: i.product.price,
+        unit: i.product.unit,
+        image: i.product.image,
+      })),
+      itemsCount: cart.reduce((sum, i) => sum + i.quantity, 0),
+      total: total,
+      deliverySlot: formData.deliverySlot,
+      paymentMethod: formData.paymentMethod === 'card' ? 'Credit Card' : 'Cash on Delivery',
+      status: 'Pending',
+      createdAt: 'Just now',
+    })
 
     try {
       confetti({
