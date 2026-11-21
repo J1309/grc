@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react'
-import { X, Check, Sparkles, Image as ImageIcon } from 'lucide-react'
+import React, { useState, useEffect, useRef } from 'react'
+import { X, Check, Upload, Image as ImageIcon, Sparkles, Trash2, ArrowUpRight } from 'lucide-react'
 import { Product } from '../../types'
 import { CATEGORIES } from '../../data/products'
 
@@ -28,23 +28,22 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   initialProduct,
 }) => {
   const isEditing = Boolean(initialProduct)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [isDragging, setIsDragging] = useState(false)
+  const [showUrlInput, setShowUrlInput] = useState(false)
 
   const [formData, setFormData] = useState<Omit<Product, 'id'>>({
     name: '',
     category: 'Rice',
     categorySlug: 'rice',
     price: 9.99,
-    originalPrice: 12.99,
-    discount: '20% OFF',
-    rating: 4.8,
-    reviewsCount: 24,
+    originalPrice: undefined,
     unit: '1 kg',
     image: PRESET_IMAGES[0].url,
     description: '',
     inStock: true,
-    isLatest: true,
-    isBestSeller: false,
-    isSpecialOffer: false,
+    rating: 4.8,
+    reviewsCount: 18,
     origin: 'Farm Direct',
   })
 
@@ -56,17 +55,13 @@ export const ProductModal: React.FC<ProductModalProps> = ({
         categorySlug: initialProduct.categorySlug,
         price: initialProduct.price,
         originalPrice: initialProduct.originalPrice,
-        discount: initialProduct.discount || '',
-        rating: initialProduct.rating,
-        reviewsCount: initialProduct.reviewsCount,
         unit: initialProduct.unit,
         image: initialProduct.image,
-        description: initialProduct.description,
+        description: initialProduct.description || '',
         inStock: initialProduct.inStock,
-        isLatest: initialProduct.isLatest || false,
-        isBestSeller: initialProduct.isBestSeller || false,
-        isSpecialOffer: initialProduct.isSpecialOffer || false,
-        origin: initialProduct.origin || '',
+        rating: initialProduct.rating || 4.8,
+        reviewsCount: initialProduct.reviewsCount || 12,
+        origin: initialProduct.origin || 'Farm Direct',
       })
     } else {
       setFormData({
@@ -74,20 +69,17 @@ export const ProductModal: React.FC<ProductModalProps> = ({
         category: 'Rice',
         categorySlug: 'rice',
         price: 9.99,
-        originalPrice: 12.99,
-        discount: '20% OFF',
-        rating: 4.8,
-        reviewsCount: 18,
+        originalPrice: undefined,
         unit: '1 kg',
         image: PRESET_IMAGES[0].url,
-        description: 'Fresh and premium quality grocery staple sourced directly from certified organic farms.',
+        description: '',
         inStock: true,
-        isLatest: true,
-        isBestSeller: false,
-        isSpecialOffer: false,
-        origin: 'Direct from Farm',
+        rating: 4.8,
+        reviewsCount: 12,
+        origin: 'Farm Direct',
       })
     }
+    setShowUrlInput(false)
   }, [initialProduct, isOpen])
 
   if (!isOpen) return null
@@ -99,6 +91,49 @@ export const ProductModal: React.FC<ProductModalProps> = ({
       category: catName,
       categorySlug: matched ? matched.slug : catName.toLowerCase().replace(/\s+/g, '-'),
     }))
+  }
+
+  // Handle Drag & Drop
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(true)
+  }
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+  }
+
+  const processFile = (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file (PNG, JPG, WebP, etc.).')
+      return
+    }
+    const reader = new FileReader()
+    reader.onload = (uploadEvent) => {
+      const dataUrl = uploadEvent.target?.result as string
+      if (dataUrl) {
+        setFormData((prev) => ({ ...prev, image: dataUrl }))
+      }
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setIsDragging(false)
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      processFile(e.dataTransfer.files[0])
+    }
+  }
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      processFile(e.target.files[0])
+    }
   }
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -124,59 +159,177 @@ export const ProductModal: React.FC<ProductModalProps> = ({
         onClick={onClose}
       />
 
-      {/* Modal Card */}
-      <div className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-stone-200 overflow-hidden z-10 my-auto">
+      {/* Modal Dialog Card */}
+      <div className="relative w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-stone-200 overflow-hidden z-10 my-auto flex flex-col max-h-[92vh]">
         {/* Header */}
-        <div className="bg-forest-900 text-white px-6 py-4 flex items-center justify-between border-b border-forest-800">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-forest-800 flex items-center justify-center text-harvest-400">
-              <Sparkles className="w-4 h-4" />
-            </div>
-            <div>
-              <h3 className="font-extrabold text-base">
-                {isEditing ? 'Edit Grocery Item' : 'Add New Grocery Item'}
-              </h3>
-              <p className="text-xs text-emerald-200">
-                {isEditing ? 'Update item details, price & stock status' : 'Publish new item to live storefront'}
-              </p>
-            </div>
+        <div className="px-6 py-4.5 border-b border-stone-200 flex items-center justify-between bg-stone-50/70 shrink-0">
+          <div>
+            <h3 className="font-extrabold text-base text-stone-900">
+              {isEditing ? 'Edit Product' : 'Add New Item'}
+            </h3>
+            <p className="text-xs text-stone-500">
+              {isEditing ? 'Update item details and stock' : 'Add a grocery product to the catalog'}
+            </p>
           </div>
 
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-full hover:bg-forest-800 text-emerald-200 hover:text-white transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-full bg-white hover:bg-stone-200 text-stone-500 hover:text-stone-800 flex items-center justify-center transition-colors cursor-pointer border border-stone-200/80"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
-          {/* Row 1: Item Name & Category */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">
-                Product Name *
-              </label>
+        {/* Minimal Form Body */}
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto flex-1">
+          {/* 1. Drag & Drop Image Uploader (Required user feature) */}
+          <div>
+            <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">
+              Product Image *
+            </label>
+
+            {/* Dropzone Container */}
+            <div
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              onClick={() => fileInputRef.current?.click()}
+              className={`relative border-2 border-dashed rounded-2xl p-4 transition-all cursor-pointer flex flex-col items-center justify-center text-center ${
+                isDragging
+                  ? 'border-forest-700 bg-forest-50/60 scale-[0.99]'
+                  : 'border-stone-300 hover:border-forest-700 bg-stone-50/50'
+              }`}
+            >
               <input
-                type="text"
-                required
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="e.g. Royal Basmati Rice"
-                className="w-full h-11 px-3.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-forest-600/20 focus:border-forest-700 bg-stone-50/50"
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileInputChange}
+                className="hidden"
               />
+
+              {formData.image ? (
+                <div className="flex items-center gap-4 w-full">
+                  <div className="w-16 h-16 rounded-xl overflow-hidden border border-stone-200 bg-white shrink-0 shadow-xs">
+                    <img
+                      src={formData.image}
+                      alt="Product preview"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="flex-1 text-left min-w-0">
+                    <p className="text-xs font-bold text-stone-800 truncate">
+                      Image attached successfully
+                    </p>
+                    <p className="text-[11px] text-stone-400 mt-0.5">
+                      Drag a new file or click Attach to replace
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      fileInputRef.current?.click()
+                    }}
+                    className="px-3 py-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-bold transition-colors cursor-pointer shrink-0"
+                  >
+                    Replace
+                  </button>
+                </div>
+              ) : (
+                <div className="py-3 flex flex-col items-center">
+                  <div className="w-10 h-10 rounded-full bg-forest-100 text-forest-800 flex items-center justify-center mb-2">
+                    <Upload className="w-5 h-5 text-forest-800" />
+                  </div>
+                  <p className="text-xs font-bold text-stone-800">
+                    Drag and drop product image here
+                  </p>
+                  <p className="text-[11px] text-stone-400 mt-0.5">
+                    Supports PNG, JPG, WebP up to 5MB
+                  </p>
+                </div>
+              )}
+
+              {/* Attach File Button */}
+              <div className="mt-3 flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    fileInputRef.current?.click()
+                  }}
+                  className="px-3.5 py-1.5 rounded-xl bg-forest-900 hover:bg-forest-850 text-white text-xs font-bold transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
+                >
+                  <Upload className="w-3.5 h-3.5 text-harvest-400" />
+                  <span>Attach Image</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setShowUrlInput(!showUrlInput)
+                  }}
+                  className="px-3 py-1.5 rounded-xl border border-stone-200 text-stone-600 hover:bg-stone-100 text-xs font-semibold transition-colors cursor-pointer"
+                >
+                  {showUrlInput ? 'Hide Presets' : 'Or Pick Preset'}
+                </button>
+              </div>
             </div>
 
+            {/* Optional URL or Preset bar */}
+            {showUrlInput && (
+              <div className="mt-2.5 p-3 rounded-xl bg-stone-50 border border-stone-200 space-y-2">
+                <input
+                  type="url"
+                  value={formData.image}
+                  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                  placeholder="Paste direct image URL: https://..."
+                  className="w-full h-9 px-3 rounded-lg border border-stone-200 text-xs bg-white text-stone-700 focus:outline-none"
+                />
+                <div className="flex items-center gap-1 overflow-x-auto no-scrollbar pt-1">
+                  <span className="text-[10px] uppercase font-bold text-stone-400 shrink-0">Presets:</span>
+                  {PRESET_IMAGES.map((p, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, image: p.url })}
+                      className="text-[10px] px-2 py-0.5 rounded-md bg-white border border-stone-200 hover:border-forest-700 text-stone-600 shrink-0 cursor-pointer"
+                    >
+                      {p.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* 2. Product Name */}
+          <div>
+            <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1">
+              Item Name *
+            </label>
+            <input
+              type="text"
+              required
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              placeholder="e.g. Royal Basmati Rice, Pure Ghee"
+              className="w-full h-10 px-3.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-1 focus:ring-forest-700 bg-stone-50/50 text-stone-900"
+            />
+          </div>
+
+          {/* 3. Category & Unit */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">
-                Category Aisle *
+              <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1">
+                Category *
               </label>
               <select
                 value={formData.category}
                 onChange={(e) => handleCategoryChange(e.target.value)}
-                className="w-full h-11 px-3.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-forest-600/20 focus:border-forest-700 bg-stone-50/50"
+                className="w-full h-10 px-3 rounded-xl border border-stone-200 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-forest-700 bg-stone-50/50 text-stone-800 cursor-pointer"
               >
                 {CATEGORIES.map((cat) => (
                   <option key={cat.id} value={cat.name}>
@@ -185,45 +338,9 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                 ))}
               </select>
             </div>
-          </div>
-
-          {/* Row 2: Price, Original Price, Unit, Discount */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div>
-              <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">
-                Price ($) *
-              </label>
-              <input
-                type="number"
-                step="0.01"
-                required
-                value={formData.price}
-                onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
-                className="w-full h-11 px-3.5 rounded-xl border border-stone-200 text-sm font-semibold text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-600/20 focus:border-forest-700 bg-stone-50/50 tabular-nums font-mono"
-              />
-            </div>
 
             <div>
-              <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">
-                Old Price ($)
-              </label>
-              <input
-                type="number"
-                step="0.01"
-                value={formData.originalPrice || ''}
-                onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    originalPrice: e.target.value ? parseFloat(e.target.value) : undefined,
-                  })
-                }
-                placeholder="Optional"
-                className="w-full h-11 px-3.5 rounded-xl border border-stone-200 text-sm text-stone-500 focus:outline-none focus:ring-2 focus:ring-forest-600/20 focus:border-forest-700 bg-stone-50/50 tabular-nums font-mono"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1">
                 Unit / Size *
               </label>
               <input
@@ -231,165 +348,74 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                 required
                 value={formData.unit}
                 onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                placeholder="e.g. 5 kg, 500 ml"
-                className="w-full h-11 px-3.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-forest-600/20 focus:border-forest-700 bg-stone-50/50"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">
-                Discount Tag
-              </label>
-              <input
-                type="text"
-                value={formData.discount || ''}
-                onChange={(e) => setFormData({ ...formData, discount: e.target.value })}
-                placeholder="e.g. 15% OFF"
-                className="w-full h-11 px-3.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-forest-600/20 focus:border-forest-700 bg-stone-50/50 text-harvest-600 font-bold"
+                placeholder="e.g. 5 kg, 500 ml, 6 pcs"
+                className="w-full h-10 px-3.5 rounded-xl border border-stone-200 text-xs focus:outline-none focus:ring-1 focus:ring-forest-700 bg-stone-50/50 text-stone-800"
               />
             </div>
           </div>
 
-          {/* Row 3: Image URL & Quick Preset Picker */}
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-bold text-stone-700 uppercase tracking-wider">
-                Product Image URL *
+          {/* 4. Price ($) & In Stock Toggle */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-center">
+            <div>
+              <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1">
+                Price ($) *
               </label>
-              <span className="text-[11px] text-stone-400">Select preset or paste image URL</span>
-            </div>
-
-            <div className="flex gap-3 items-center">
               <input
-                type="url"
+                type="number"
+                step="0.01"
+                min="0.1"
                 required
-                value={formData.image}
-                onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                placeholder="https://..."
-                className="flex-1 h-11 px-3.5 rounded-xl border border-stone-200 text-xs text-stone-700 focus:outline-none focus:ring-2 focus:ring-forest-600/20 focus:border-forest-700 bg-stone-50/50"
+                value={formData.price}
+                onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
+                className="w-full h-10 px-3.5 rounded-xl border border-stone-200 text-sm font-bold text-forest-900 focus:outline-none focus:ring-1 focus:ring-forest-700 bg-stone-50/50 tabular-nums font-mono"
               />
-              <div className="w-11 h-11 rounded-xl border border-stone-200 overflow-hidden shrink-0 bg-stone-100 flex items-center justify-center">
-                {formData.image ? (
-                  <img src={formData.image} alt="Preview" className="w-full h-full object-cover" />
-                ) : (
-                  <ImageIcon className="w-4 h-4 text-stone-400" />
-                )}
-              </div>
             </div>
 
-            {/* Quick preset thumbnail pills */}
-            <div className="flex items-center gap-1.5 mt-2 overflow-x-auto pb-1 no-scrollbar">
-              <span className="text-[10px] uppercase font-bold text-stone-400 shrink-0">Presets:</span>
-              {PRESET_IMAGES.map((preset, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => setFormData({ ...formData, image: preset.url })}
-                  className={`text-[11px] px-2.5 py-1 rounded-lg border shrink-0 transition-colors cursor-pointer ${
-                    formData.image === preset.url
-                      ? 'bg-forest-900 text-white border-forest-900 font-bold'
-                      : 'bg-white text-stone-600 border-stone-200 hover:border-forest-700'
-                  }`}
-                >
-                  {preset.name}
-                </button>
-              ))}
+            <div className="pt-5 sm:pt-4">
+              <label className="flex items-center gap-2 cursor-pointer select-none p-2 rounded-xl bg-stone-50 border border-stone-200">
+                <input
+                  type="checkbox"
+                  checked={formData.inStock}
+                  onChange={(e) => setFormData({ ...formData, inStock: e.target.checked })}
+                  className="w-4 h-4 rounded text-forest-700 focus:ring-forest-600"
+                />
+                <span className="flex items-center gap-1.5 text-xs font-bold text-stone-800">
+                  <span className={`w-2 h-2 rounded-full ${formData.inStock ? 'bg-emerald-600' : 'bg-rose-500'}`} />
+                  <span>{formData.inStock ? 'In Stock (Available)' : 'Out of Stock'}</span>
+                </span>
+              </label>
             </div>
           </div>
 
-          {/* Row 4: Origin & Description */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">
-                Origin / Tagline
-              </label>
-              <input
-                type="text"
-                value={formData.origin || ''}
-                onChange={(e) => setFormData({ ...formData, origin: e.target.value })}
-                placeholder="e.g. Himalayan Valleys / Farm Direct"
-                className="w-full h-11 px-3.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-forest-600/20 focus:border-forest-700 bg-stone-50/50"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">
-                Description
-              </label>
-              <input
-                type="text"
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Short description of the staple"
-                className="w-full h-11 px-3.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-forest-600/20 focus:border-forest-700 bg-stone-50/50"
-              />
-            </div>
-          </div>
-
-          {/* Row 5: Flags & Stock Switcher */}
-          <div className="p-3.5 rounded-2xl bg-stone-50 border border-stone-200 flex flex-wrap items-center justify-between gap-3">
-            {/* In Stock toggle */}
-            <label className="flex items-center gap-2 cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={formData.inStock}
-                onChange={(e) => setFormData({ ...formData, inStock: e.target.checked })}
-                className="w-4 h-4 rounded text-forest-700 focus:ring-forest-600"
-              />
-              <span className="flex items-center gap-1.5 text-xs font-bold text-stone-800">
-                <span className={`w-2 h-2 rounded-full ${formData.inStock ? 'bg-emerald-600' : 'bg-rose-500'}`} />
-                <span>{formData.inStock ? 'In Stock (Available)' : 'Out of Stock'}</span>
-              </span>
+          {/* 5. Short Description (Optional) */}
+          <div>
+            <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1">
+              Short Description <span className="text-stone-400 font-normal">(Optional)</span>
             </label>
-
-            <div className="flex items-center gap-4">
-              <label className="flex items-center gap-1.5 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={formData.isLatest}
-                  onChange={(e) => setFormData({ ...formData, isLatest: e.target.checked })}
-                  className="w-3.5 h-3.5 rounded text-forest-700"
-                />
-                <span className="text-xs text-stone-600 font-medium">New Arrival</span>
-              </label>
-
-              <label className="flex items-center gap-1.5 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={formData.isBestSeller}
-                  onChange={(e) => setFormData({ ...formData, isBestSeller: e.target.checked })}
-                  className="w-3.5 h-3.5 rounded text-harvest-500"
-                />
-                <span className="text-xs text-stone-600 font-medium">Best Seller</span>
-              </label>
-
-              <label className="flex items-center gap-1.5 cursor-pointer select-none">
-                <input
-                  type="checkbox"
-                  checked={formData.isSpecialOffer}
-                  onChange={(e) => setFormData({ ...formData, isSpecialOffer: e.target.checked })}
-                  className="w-3.5 h-3.5 rounded text-rose-500"
-                />
-                <span className="text-xs text-stone-600 font-medium">Special Offer</span>
-              </label>
-            </div>
+            <input
+              type="text"
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              placeholder="Fresh harvested staple sourced directly from certified farms"
+              className="w-full h-10 px-3.5 rounded-xl border border-stone-200 text-xs focus:outline-none focus:ring-1 focus:ring-forest-700 bg-stone-50/50 text-stone-700"
+            />
           </div>
 
           {/* Form Actions */}
-          <div className="pt-2 flex items-center justify-end gap-3 border-t border-stone-100">
+          <div className="pt-3 flex items-center justify-end gap-2.5 border-t border-stone-100">
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2.5 rounded-xl border border-stone-200 text-stone-600 hover:bg-stone-50 text-xs font-bold transition-colors cursor-pointer"
+              className="px-4 py-2.5 rounded-xl border border-stone-200 text-stone-600 hover:bg-stone-50 text-xs font-bold transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-6 py-2.5 rounded-xl bg-forest-900 hover:bg-forest-850 text-white text-xs font-bold transition-colors shadow-sm cursor-pointer flex items-center gap-1.5"
+              className="px-5 py-2.5 rounded-xl bg-forest-900 hover:bg-forest-850 text-white text-xs font-bold transition-colors shadow-sm cursor-pointer flex items-center gap-1.5"
             >
               <Check className="w-4 h-4 text-harvest-400" />
-              <span>{isEditing ? 'Save Changes' : 'Publish Product'}</span>
+              <span>{isEditing ? 'Save Changes' : 'Add Item'}</span>
             </button>
           </div>
         </form>
