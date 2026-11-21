@@ -202,19 +202,16 @@ export const AdminDashboard: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#ECEEF2] p-2 sm:p-5 lg:p-7 flex justify-center text-stone-800 font-sans selection:bg-forest-100 selection:text-forest-900">
-      {/* Outer Shell: Clean App Container strictly matching user's reference image */}
-      <div className="w-full max-w-[1520px] bg-[#FAF8F5] rounded-[28px] sm:rounded-[36px] shadow-sm border border-stone-200/90 flex flex-col md:flex-row overflow-hidden min-h-[92vh]">
-        
-        {/* ========================================================= */}
-        {/* LEFT SIDEBAR (Matching reference image layout)             */}
-        {/* ========================================================= */}
-        <aside className="w-full md:w-64 bg-white border-b md:border-b-0 md:border-r border-stone-200/80 p-4 sm:p-5 flex flex-col justify-between shrink-0">
-          <div>
-            {/* Top Brand Logo & Collapse Icon */}
-            <div className="flex items-center justify-between mb-5">
-              <BrandLogo markSize={32} subtext="Operations" />
-            </div>
+    <div className="min-h-screen w-full bg-[#FAF8F5] flex flex-col md:flex-row text-stone-800 font-sans selection:bg-forest-100 selection:text-forest-900">
+      {/* ========================================================= */}
+      {/* LEFT SIDEBAR (Full-height flush sidebar)                   */}
+      {/* ========================================================= */}
+      <aside className="w-full md:w-64 bg-white border-b md:border-b-0 md:border-r border-stone-200/80 p-4 sm:p-5 flex flex-col justify-between shrink-0 md:h-screen md:sticky md:top-0 overflow-y-auto">
+        <div>
+          {/* Top Brand Logo & Collapse Icon */}
+          <div className="flex items-center justify-between mb-5">
+            <BrandLogo markSize={32} subtext="Operations" />
+          </div>
 
             {/* Store Switcher Card */}
             <div className="p-2.5 rounded-2xl bg-stone-50 border border-stone-200/80 flex items-center justify-between mb-4">
@@ -1104,7 +1101,6 @@ export const AdminDashboard: React.FC = () => {
           )}
 
         </div>
-      </div>
 
       {/* ========================================================= */}
       {/* DELIVERY UPDATES & DISPATCH DRAWER / MODAL               */}
