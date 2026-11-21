@@ -56,6 +56,15 @@ export interface OrderItem {
   image?: string
 }
 
+export interface DeliveryUpdate {
+  id: string
+  timestamp: string
+  status: OrderStatus
+  message: string
+  courierName?: string
+  location?: string
+}
+
 export interface Order {
   id: string
   customerName: string
@@ -71,5 +80,7 @@ export interface Order {
   paymentMethod: string
   status: OrderStatus
   createdAt: string
+  trackingNumber?: string
+  estimatedDelivery?: string
+  deliveryUpdates?: DeliveryUpdate[]
 }
-

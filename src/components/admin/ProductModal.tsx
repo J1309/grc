@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { X, Check, Upload, Sparkles, Image as ImageIcon } from 'lucide-react'
+import { X, Check, Sparkles, Image as ImageIcon } from 'lucide-react'
 import { Product } from '../../types'
 import { CATEGORIES } from '../../data/products'
 
@@ -127,7 +127,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
       {/* Modal Card */}
       <div className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl border border-stone-200 overflow-hidden z-10 my-auto">
         {/* Header */}
-        <div className="bg-forest-900 text-white px-6 py-4.5 flex items-center justify-between border-b border-forest-800">
+        <div className="bg-forest-900 text-white px-6 py-4 flex items-center justify-between border-b border-forest-800">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-full bg-forest-800 flex items-center justify-center text-harvest-400">
               <Sparkles className="w-4 h-4" />
@@ -199,7 +199,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                 required
                 value={formData.price}
                 onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
-                className="w-full h-11 px-3.5 rounded-xl border border-stone-200 text-sm font-semibold text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-600/20 focus:border-forest-700 bg-stone-50/50"
+                className="w-full h-11 px-3.5 rounded-xl border border-stone-200 text-sm font-semibold text-forest-900 focus:outline-none focus:ring-2 focus:ring-forest-600/20 focus:border-forest-700 bg-stone-50/50 tabular-nums font-mono"
               />
             </div>
 
@@ -218,7 +218,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                   })
                 }
                 placeholder="Optional"
-                className="w-full h-11 px-3.5 rounded-xl border border-stone-200 text-sm text-stone-500 focus:outline-none focus:ring-2 focus:ring-forest-600/20 focus:border-forest-700 bg-stone-50/50"
+                className="w-full h-11 px-3.5 rounded-xl border border-stone-200 text-sm text-stone-500 focus:outline-none focus:ring-2 focus:ring-forest-600/20 focus:border-forest-700 bg-stone-50/50 tabular-nums font-mono"
               />
             </div>
 
@@ -256,7 +256,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
               <label className="text-xs font-bold text-stone-700 uppercase tracking-wider">
                 Product Image URL *
               </label>
-              <span className="text-[11px] text-stone-400">Select preset or paste custom URL</span>
+              <span className="text-[11px] text-stone-400">Select preset or paste image URL</span>
             </div>
 
             <div className="flex gap-3 items-center">
@@ -320,7 +320,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                 type="text"
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Short description of the item"
+                placeholder="Short description of the staple"
                 className="w-full h-11 px-3.5 rounded-xl border border-stone-200 text-sm focus:outline-none focus:ring-2 focus:ring-forest-600/20 focus:border-forest-700 bg-stone-50/50"
               />
             </div>
@@ -336,8 +336,9 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                 onChange={(e) => setFormData({ ...formData, inStock: e.target.checked })}
                 className="w-4 h-4 rounded text-forest-700 focus:ring-forest-600"
               />
-              <span className="text-xs font-bold text-stone-800">
-                {formData.inStock ? '🟢 In Stock (Available)' : '🔴 Out of Stock'}
+              <span className="flex items-center gap-1.5 text-xs font-bold text-stone-800">
+                <span className={`w-2 h-2 rounded-full ${formData.inStock ? 'bg-emerald-600' : 'bg-rose-500'}`} />
+                <span>{formData.inStock ? 'In Stock (Available)' : 'Out of Stock'}</span>
               </span>
             </label>
 
@@ -397,4 +398,3 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   )
 }
 export default ProductModal
-

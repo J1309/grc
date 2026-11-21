@@ -20,6 +20,33 @@ export const INITIAL_ORDERS: Order[] = [
     paymentMethod: 'Credit Card',
     status: 'Out for Delivery',
     createdAt: 'Today, 02:45 PM',
+    trackingNumber: 'TRK-98412-NY',
+    estimatedDelivery: 'Today, 03:30 PM - 04:00 PM',
+    deliveryUpdates: [
+      {
+        id: 'upd-101',
+        timestamp: 'Today, 02:45 PM',
+        status: 'Out for Delivery',
+        message: 'Driver Marcus Rivera has picked up your refrigerated tote. Van #4 is 1.4 miles away.',
+        courierName: 'Marcus R. (Van #4)',
+        location: 'Midtown East Route',
+      },
+      {
+        id: 'upd-102',
+        timestamp: 'Today, 02:00 PM',
+        status: 'Packing',
+        message: 'Order verified and packed with fresh temperature-controlled ice gel packs at Farm Hub.',
+        courierName: 'Fulfillment Team',
+        location: 'Central Farm Hub #1',
+      },
+      {
+        id: 'upd-103',
+        timestamp: 'Today, 01:15 PM',
+        status: 'Pending',
+        message: 'Order received and confirmed. Items reserved from fresh farm inventory.',
+        location: 'System Online',
+      },
+    ],
   },
   {
     id: 'GC-10023',
@@ -40,6 +67,25 @@ export const INITIAL_ORDERS: Order[] = [
     paymentMethod: 'Apple Pay',
     status: 'Packing',
     createdAt: 'Today, 01:15 PM',
+    trackingNumber: 'TRK-98411-NY',
+    estimatedDelivery: 'Today, 04:45 PM',
+    deliveryUpdates: [
+      {
+        id: 'upd-201',
+        timestamp: 'Today, 01:45 PM',
+        status: 'Packing',
+        message: 'Quality check passed: organic ghee seal intact, lentils vacuum-packed.',
+        courierName: 'Hub Inspector Elena',
+        location: 'Packing Station B3',
+      },
+      {
+        id: 'upd-202',
+        timestamp: 'Today, 01:15 PM',
+        status: 'Pending',
+        message: 'Order paid via Apple Pay and queued for afternoon dispatch.',
+        location: 'Order Gateway',
+      },
+    ],
   },
   {
     id: 'GC-10022',
@@ -59,6 +105,17 @@ export const INITIAL_ORDERS: Order[] = [
     paymentMethod: 'Credit Card',
     status: 'Pending',
     createdAt: 'Today, 11:30 AM',
+    trackingNumber: 'TRK-98410-NY',
+    estimatedDelivery: 'Today, 03:00 PM',
+    deliveryUpdates: [
+      {
+        id: 'upd-301',
+        timestamp: 'Today, 11:30 AM',
+        status: 'Pending',
+        message: 'Order confirmed and awaiting packer assignment at West Side Depot.',
+        location: 'West Side Depot',
+      },
+    ],
   },
   {
     id: 'GC-10021',
@@ -79,6 +136,33 @@ export const INITIAL_ORDERS: Order[] = [
     paymentMethod: 'Cash on Delivery',
     status: 'Completed',
     createdAt: 'Yesterday, 06:20 PM',
+    trackingNumber: 'TRK-98409-NY',
+    estimatedDelivery: 'Delivered',
+    deliveryUpdates: [
+      {
+        id: 'upd-401',
+        timestamp: 'Yesterday, 07:15 PM',
+        status: 'Completed',
+        message: 'Package handed directly to customer Sarah Jenkins. Signature captured.',
+        courierName: 'Carlos M. (Van #2)',
+        location: 'Front Door / Penthouse B',
+      },
+      {
+        id: 'upd-402',
+        timestamp: 'Yesterday, 06:40 PM',
+        status: 'Out for Delivery',
+        message: 'Driver arriving on Broadway. Approaching delivery stop.',
+        courierName: 'Carlos M. (Van #2)',
+        location: 'Broadway / 18th St',
+      },
+      {
+        id: 'upd-403',
+        timestamp: 'Yesterday, 06:20 PM',
+        status: 'Pending',
+        message: 'Order placed for evening express delivery.',
+        location: 'Order Gateway',
+      },
+    ],
   },
   {
     id: 'GC-10020',
@@ -98,6 +182,17 @@ export const INITIAL_ORDERS: Order[] = [
     paymentMethod: 'Credit Card',
     status: 'Completed',
     createdAt: 'Yesterday, 03:10 PM',
+    trackingNumber: 'TRK-98408-NY',
+    estimatedDelivery: 'Delivered',
+    deliveryUpdates: [
+      {
+        id: 'upd-501',
+        timestamp: 'Yesterday, 04:55 PM',
+        status: 'Completed',
+        message: 'Delivered to building reception / doorman as requested.',
+        courierName: 'James L. (Van #1)',
+        location: '320 Riverside Concierge',
+      },
+    ],
   },
 ]
-

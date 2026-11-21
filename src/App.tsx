@@ -15,18 +15,25 @@ import { CartDrawer } from './components/cart/CartDrawer'
 import { CheckoutModal } from './components/cart/CheckoutModal'
 import { QuickViewModal } from './components/product/QuickViewModal'
 import { ToastContainer } from './components/ui/ToastContainer'
-import { ProductCard } from './components/product/ProductCard'
 import { AdminDashboard } from './components/admin/AdminDashboard'
+import { UserAccountModal } from './components/account/UserAccountModal'
 import { CATEGORIES } from './data/products'
 
 const Storefront: React.FC = () => {
   const { products, currentView, setCurrentView } = useStore()
   const [searchQuery, setSearchQuery] = useState('')
   const [activeCategory, setActiveCategory] = useState('all')
+  const [isTrackingModalOpen, setIsTrackingModalOpen] = useState(false)
+  const [trackingOrderId, setTrackingOrderId] = useState<string | undefined>(undefined)
 
   const handleShopNow = () => {
     const el = document.getElementById('catalog-section')
     if (el) el.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  const handleOpenTracking = (orderId?: string) => {
+    setTrackingOrderId(orderId)
+    setIsTrackingModalOpen(true)
   }
 
   // Filter products by selected category or search query
@@ -65,6 +72,7 @@ const Storefront: React.FC = () => {
       <Navbar
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
+        onOpenTracking={handleOpenTracking}
         onCategorySelect={(slug) => {
           setActiveCategory(slug)
           if (slug !== 'all') {
@@ -86,7 +94,7 @@ const Storefront: React.FC = () => {
         }}
       />
 
-      <main className="flex-1">
+      <main className="flex-1 w-full max-w-full overflow-hidden">
         {/* Hero Banner (Think Smart, Makes Life Easier) */}
         <HeroBanner onShopNow={handleShopNow} />
 
@@ -134,6 +142,13 @@ const Storefront: React.FC = () => {
       {/* Product Quick View Modal */}
       <QuickViewModal />
 
+      {/* Customer Account & Order Tracking Modal */}
+      <UserAccountModal
+        isOpen={isTrackingModalOpen}
+        onClose={() => setIsTrackingModalOpen(false)}
+        initialOrderId={trackingOrderId}
+      />
+
       {/* Floating Action Notifications */}
       <ToastContainer />
     </div>
@@ -153,4 +168,3 @@ export function App() {
 }
 
 export default App
-

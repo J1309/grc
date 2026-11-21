@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
-import { Product, Order, OrderStatus } from '../types'
+import { Product, Order, OrderStatus, DeliveryUpdate } from '../types'
 import { PRODUCTS } from '../data/products'
 import { INITIAL_ORDERS } from '../data/orders'
 
@@ -15,12 +15,19 @@ interface StoreContextType {
   resetProductsToDefault: () => void
   addOrder: (order: Order) => void
   updateOrderStatus: (id: string, status: OrderStatus) => void
+  addDeliveryUpdate: (
+    orderId: string,
+    status: OrderStatus,
+    message: string,
+    courierName?: string,
+    location?: string
+  ) => void
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined)
 
-const PRODUCTS_STORAGE_KEY = 'grocery_cart_products_v1'
-const ORDERS_STORAGE_KEY = 'grocery_cart_orders_v1'
+const PRODUCTS_STORAGE_KEY = 'grocery_cart_products_v2'
+const ORDERS_STORAGE_KEY = 'grocery_cart_orders_v2'
 
 export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Sync view with URL hash (#admin / #storefront)
@@ -127,8 +134,10 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   // Reset to original default data
   const resetProductsToDefault = () => {
     setProducts(PRODUCTS)
+    setOrders(INITIAL_ORDERS)
     try {
       localStorage.removeItem(PRODUCTS_STORAGE_KEY)
+      localStorage.removeItem(ORDERS_STORAGE_KEY)
     } catch (e) {
       // ignore
     }
@@ -136,13 +145,69 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   // Order Management: Add Order (from checkout)
   const addOrder = (order: Order) => {
-    setOrders((prev) => [order, ...prev])
+    const orderWithTimeline: Order = {
+      ...order,
+      trackingNumber: order.trackingNumber || `TRK-${Math.floor(10000 + Math.random() * 90000)}-NY`,
+      estimatedDelivery: order.estimatedDelivery || 'Today within 2 hours',
+      deliveryUpdates: order.deliveryUpdates || [
+        {
+          id: 'upd-' + Date.now(),
+          timestamp: 'Just now',
+          status: 'Pending',
+          message: 'Order placed successfully. Awaiting fulfillment team assignment.',
+          location: 'Online Store Checkout',
+        },
+      ],
+    }
+    setOrders((prev) => [orderWithTimeline, ...prev])
   }
 
   // Order Management: Update Order Status
   const updateOrderStatus = (id: string, status: OrderStatus) => {
     setOrders((prev) =>
-      prev.map((ord) => (ord.id === id ? { ...ord, status } : ord))
+      prev.map((ord) => {
+        if (ord.id !== id) return ord
+        const newUpdate: DeliveryUpdate = {
+          id: 'upd-' + Date.now(),
+          timestamp: 'Just now',
+          status,
+          message: `Status updated to ${status} by Store Operations.`,
+          location: 'Dispatch Central',
+        }
+        return {
+          ...ord,
+          status,
+          deliveryUpdates: [newUpdate, ...(ord.deliveryUpdates || [])],
+        }
+      })
+    )
+  }
+
+  // Order Management: Add Delivery Update with custom note and courier details
+  const addDeliveryUpdate = (
+    orderId: string,
+    status: OrderStatus,
+    message: string,
+    courierName?: string,
+    location?: string
+  ) => {
+    setOrders((prev) =>
+      prev.map((ord) => {
+        if (ord.id !== orderId) return ord
+        const newUpdate: DeliveryUpdate = {
+          id: 'upd-' + Date.now(),
+          timestamp: 'Just now',
+          status,
+          message: message.trim() || `Delivery status changed to ${status}`,
+          courierName: courierName?.trim() || undefined,
+          location: location?.trim() || 'Central Distribution Hub',
+        }
+        return {
+          ...ord,
+          status,
+          deliveryUpdates: [newUpdate, ...(ord.deliveryUpdates || [])],
+        }
+      })
     )
   }
 
@@ -160,6 +225,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         resetProductsToDefault,
         addOrder,
         updateOrderStatus,
+        addDeliveryUpdate,
       }}
     >
       {children}
@@ -174,4 +240,3 @@ export const useStore = () => {
   }
   return context
 }
-
