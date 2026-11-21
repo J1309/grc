@@ -38,7 +38,7 @@ export const FeaturedProducts: React.FC<FeaturedProductsProps> = ({
     if (activeTab === 'new-arrivals') return product.isLatest
     if (activeTab === 'special-offers') return product.isSpecialOffer || (product.discount !== undefined)
     return true
-  }).slice(0, 8)
+  })
 
   return (
     <section id="catalog-section" className="w-full max-w-7xl mx-auto px-4 py-8">

@@ -31,6 +31,7 @@ import {
   Store,
   ArrowRight,
   TrendingUp,
+  Database,
 } from 'lucide-react'
 import { useStore } from '../../context/StoreContext'
 import { Product, Order, OrderStatus } from '../../types'
@@ -39,6 +40,7 @@ import { formatPrice } from '../../lib/utils'
 import { BrandLogo } from '../layout/BrandLogo'
 import { ProductModal } from './ProductModal'
 import { useClerkStatus } from '../auth/ClerkAuthProvider'
+import { useConvexStatus } from '../../context/ConvexClientProvider'
 import {
   SignedIn,
   SignedOut,
@@ -60,6 +62,7 @@ export const AdminDashboard: React.FC = () => {
     resetProductsToDefault,
   } = useStore()
   const { isClerkConfigured } = useClerkStatus()
+  const { isConvexConfigured } = useConvexStatus()
 
   // STRICT SEPARATE SECTIONS: Overview, Products, Orders, Account (No "CRUD" label)
   const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders' | 'account'>('overview')
@@ -350,306 +353,297 @@ export const AdminDashboard: React.FC = () => {
           </header>
 
           {/* ========================================================= */}
-          {/* SECTION 1: OVERVIEW DASHBOARD                             */}
+          {/* SECTION 1: OVERVIEW DASHBOARD (REAL INVENTORY & NO FAKE DATA) */}
           {/* ========================================================= */}
           {activeTab === 'overview' && (
             <main className="p-5 sm:p-8 space-y-6 flex-1">
-              {/* Operations Banner */}
-              <div className="p-4 sm:p-5 rounded-2xl bg-[#FAF6EC] border border-[#F3E7C4] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-stone-800">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-forest-900 text-harvest-400 flex items-center justify-center shrink-0">
-                    <Sparkles className="w-4 h-4" />
+              {/* Operations & Convex Sync Status Banner */}
+              <div className="p-4 sm:p-5 rounded-2xl bg-white border border-stone-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-10 h-10 rounded-2xl bg-forest-900 text-harvest-400 flex items-center justify-center shrink-0">
+                    <Database className="w-5 h-5" />
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-stone-900">
-                      Store Fulfillment Active • 98.4% on-time dispatch rate
-                    </p>
-                    <p className="text-[11px] text-stone-500">
-                      All farm-direct staples in stock and ready for 2-hour delivery windows.
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h2 className="text-sm sm:text-base font-extrabold text-stone-900">
+                        Live Grocery Catalog & Inventory
+                      </h2>
+                      {isConvexConfigured ? (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
+                          <span>Convex Cloud Live</span>
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200" title="Add VITE_CONVEX_URL in .env for real-time cloud database sync">
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                          <span>Local Storage Mode</span>
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-stone-500 mt-0.5">
+                      All product additions, stock status toggles, edits, and deletions update instantly on the customer website.
                     </p>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('orders')}
-                  className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-stone-100 text-stone-800 border border-stone-200 text-xs font-bold transition-colors cursor-pointer shrink-0 self-start sm:self-auto"
-                >
-                  Live Dispatch &rarr;
-                </button>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={handleOpenAddModal}
+                    className="px-4 py-2 rounded-xl bg-forest-900 hover:bg-forest-850 text-white text-xs font-bold transition-all shadow-xs flex items-center gap-2 cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4 text-harvest-400" />
+                    <span>Add New Item</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setCurrentView('storefront')}
+                    className="px-3.5 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5"
+                  >
+                    <Globe className="w-3.5 h-3.5" />
+                    <span>View Site</span>
+                  </button>
+                </div>
               </div>
 
-              {/* 2-Column Grid (Reference Design Structure) */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                
-                {/* Left 8 Cols: Overview Performance & Orders Volume Chart */}
-                <div className="lg:col-span-8 space-y-6">
-                  {/* Overview Performance Card */}
-                  <div className="bg-white rounded-3xl p-6 shadow-sm border border-stone-200/80">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-stone-100">
-                      <div>
-                        <h3 className="font-extrabold text-base text-stone-900">
-                          Overview performance
-                        </h3>
-                        <p className="text-xs text-stone-400">
-                          Real-time grocery store volume & logistics
-                        </p>
-                      </div>
+              {/* 4 Real Metric Cards (NO fake financial or fake visitor data) */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* Metric 1: Total Products */}
+                <div className="p-4 sm:p-5 rounded-2xl bg-white border border-stone-200/80 shadow-xs">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold text-stone-500">Total Products</span>
+                    <Package className="w-4 h-4 text-stone-400" />
+                  </div>
+                  <div className="text-2xl sm:text-3xl font-black text-stone-900 tabular-nums font-mono">
+                    {products.length}
+                  </div>
+                  <p className="text-[11px] text-stone-400 mt-1">
+                    Live grocery listings
+                  </p>
+                </div>
 
-                      {/* Time Range Pills: Day, Week, Month, Year */}
-                      <div className="flex items-center gap-1 p-1 bg-stone-100 rounded-xl">
-                        {(['day', 'week', 'month', 'year'] as const).map((r) => (
-                          <button
-                            key={r}
-                            type="button"
-                            onClick={() => setTimeRange(r)}
-                            className={`px-3 py-1 rounded-lg text-xs font-bold capitalize transition-all cursor-pointer ${
-                              timeRange === r
-                                ? 'bg-white text-stone-900 shadow-xs'
-                                : 'text-stone-500 hover:text-stone-800'
-                            }`}
-                          >
-                            {r}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
+                {/* Metric 2: In Stock Available */}
+                <div className="p-4 sm:p-5 rounded-2xl bg-white border border-stone-200/80 shadow-xs">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold text-stone-500">In Stock Available</span>
+                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                  </div>
+                  <div className="text-2xl sm:text-3xl font-black text-emerald-800 tabular-nums font-mono">
+                    {inStockCount}
+                  </div>
+                  <p className="text-[11px] text-stone-400 mt-1">
+                    Ready for customer purchase
+                  </p>
+                </div>
 
-                    {/* 4 Performance Metric Cards in 2x2 Grid */}
-                    <div className="grid grid-cols-2 gap-4">
-                      {/* Metric 1: Total Orders */}
-                      <div className="p-4 rounded-2xl bg-stone-50/80 border border-stone-200/70">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs font-bold text-stone-500">Total Orders</span>
-                          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">
-                            +12%
-                          </span>
-                        </div>
-                        <span className="text-2xl sm:text-3xl font-black text-stone-900 tabular-nums font-mono">
-                          1,234
-                        </span>
-                        <p className="text-[10px] text-stone-400 mt-0.5">
-                          From last 124 (last 7 days)
-                        </p>
-                      </div>
+                {/* Metric 3: Out of Stock */}
+                <div className="p-4 sm:p-5 rounded-2xl bg-white border border-stone-200/80 shadow-xs">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold text-stone-500">Restock Needed</span>
+                    <AlertTriangle className="w-4 h-4 text-rose-500" />
+                  </div>
+                  <div className="text-2xl sm:text-3xl font-black text-rose-700 tabular-nums font-mono">
+                    {outOfStockCount}
+                  </div>
+                  <p className="text-[11px] text-stone-400 mt-1">
+                    Marked out of stock
+                  </p>
+                </div>
 
-                      {/* Metric 2: Delivery Visits */}
-                      <div className="p-4 rounded-2xl bg-stone-50/80 border border-stone-200/70">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs font-bold text-stone-500">Store Visits</span>
-                          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">
-                            +8%
-                          </span>
-                        </div>
-                        <span className="text-2xl sm:text-3xl font-black text-stone-900 tabular-nums font-mono">
-                          794
-                        </span>
-                        <p className="text-[10px] text-stone-400 mt-0.5">
-                          From last 732 (last 7 days)
-                        </p>
-                      </div>
+                {/* Metric 4: Grocery Aisles */}
+                <div className="p-4 sm:p-5 rounded-2xl bg-white border border-stone-200/80 shadow-xs">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold text-stone-500">Aisles / Categories</span>
+                    <Store className="w-4 h-4 text-stone-400" />
+                  </div>
+                  <div className="text-2xl sm:text-3xl font-black text-forest-900 tabular-nums font-mono">
+                    {CATEGORIES.length}
+                  </div>
+                  <p className="text-[11px] text-stone-400 mt-1">
+                    Rice, Atta, Ghee, Spices & more
+                  </p>
+                </div>
+              </div>
 
-                      {/* Metric 3: Active Deliveries */}
-                      <div className="p-4 rounded-2xl bg-stone-50/80 border border-stone-200/70">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs font-bold text-stone-500">Active Deliveries</span>
-                          <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-1.5 py-0.5 rounded">
-                            {outForDeliveryOrders.length} On Road
-                          </span>
-                        </div>
-                        <span className="text-2xl sm:text-3xl font-black text-stone-900 tabular-nums font-mono">
-                          {outForDeliveryOrders.length + pendingOrders.length}
-                        </span>
-                        <p className="text-[10px] text-stone-400 mt-0.5">
-                          Queued in distribution hub
-                        </p>
-                      </div>
-
-                      {/* Metric 4: Compliance Rate */}
-                      <div className="p-4 rounded-2xl bg-stone-50/80 border border-stone-200/70">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs font-bold text-stone-500">2-Hr Slot Compliance</span>
-                          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">
-                            High
-                          </span>
-                        </div>
-                        <span className="text-2xl sm:text-3xl font-black text-stone-900 tabular-nums font-mono">
-                          98.4%
-                        </span>
-                        <p className="text-[10px] text-stone-400 mt-0.5">
-                          Accurate doorstep delivery
-                        </p>
-                      </div>
-                    </div>
+              {/* Real Live Products Inventory Table */}
+              <div className="bg-white rounded-3xl p-5 sm:p-6 shadow-sm border border-stone-200/80 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-stone-100">
+                  <div>
+                    <h3 className="font-extrabold text-base text-stone-900">
+                      Live Store Inventory
+                    </h3>
+                    <p className="text-xs text-stone-400">
+                      Manage items, toggle stock availability, edit pricing, or delete products.
+                    </p>
                   </div>
 
-                  {/* Order Volume Chart (Matching reference image line/area chart) */}
-                  <div className="bg-white rounded-3xl p-6 shadow-sm border border-stone-200/80">
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <h4 className="font-extrabold text-sm text-stone-900">
-                          Order Fulfillment Volume
-                        </h4>
-                        <p className="text-xs text-stone-400">Monthly dispatch count & volume trend</p>
-                      </div>
-                      <span className="text-xs font-bold text-stone-600 bg-stone-100 px-2.5 py-1 rounded-lg">
-                        Year 2026
-                      </span>
-                    </div>
-
-                    {/* Chart Container */}
-                    <div className="w-full h-56 relative pt-4">
-                      {/* SVG Area Chart */}
-                      <svg className="w-full h-full overflow-visible" viewBox="0 0 600 180" preserveAspectRatio="none">
-                        <defs>
-                          <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#084223" stopOpacity="0.25" />
-                            <stop offset="100%" stopColor="#084223" stopOpacity="0.0" />
-                          </linearGradient>
-                        </defs>
-                        {/* Horizontal Grid lines */}
-                        <line x1="0" y1="30" x2="600" y2="30" stroke="#f1ede4" strokeWidth="1" strokeDasharray="4 4" />
-                        <line x1="0" y1="75" x2="600" y2="75" stroke="#f1ede4" strokeWidth="1" strokeDasharray="4 4" />
-                        <line x1="0" y1="120" x2="600" y2="120" stroke="#f1ede4" strokeWidth="1" strokeDasharray="4 4" />
-                        <line x1="0" y1="165" x2="600" y2="165" stroke="#f1ede4" strokeWidth="1" />
-
-                        {/* Shaded Area */}
-                        <path
-                          d="M0,135 Q50,90 100,105 T200,65 T300,95 T400,60 T500,45 T600,75 L600,165 L0,165 Z"
-                          fill="url(#chartGrad)"
-                        />
-
-                        {/* Bold Curve Line */}
-                        <path
-                          d="M0,135 Q50,90 100,105 T200,65 T300,95 T400,60 T500,45 T600,75"
-                          fill="none"
-                          stroke="#084223"
-                          strokeWidth="2.5"
-                        />
-
-                        {/* Active Indicator Pin (matching reference image) */}
-                        <line x1="470" y1="48" x2="470" y2="165" stroke="#084223" strokeWidth="1.5" />
-                        <circle cx="470" cy="48" r="4.5" fill="#084223" stroke="#ffffff" strokeWidth="2" />
-                      </svg>
-
-                      {/* Hover Tooltip Box */}
-                      <div className="absolute top-2 left-[72%] transform -translate-x-1/2 bg-stone-900 text-white p-2 rounded-xl text-left shadow-lg text-[11px] pointer-events-none">
-                        <span className="text-[10px] text-stone-400 block font-mono">24 Nov 2026</span>
-                        <span className="font-extrabold text-harvest-400 tabular-nums font-mono text-xs">
-                          387 orders
-                        </span>
-                        <span className="text-[9px] text-emerald-400 block font-semibold">+4.2% peak</span>
-                      </div>
-
-                      {/* Month Labels */}
-                      <div className="flex justify-between text-[10px] text-stone-400 font-medium pt-2">
-                        <span>Jan</span>
-                        <span>Feb</span>
-                        <span>Mar</span>
-                        <span>Apr</span>
-                        <span>May</span>
-                        <span>Jun</span>
-                        <span>Jul</span>
-                        <span>Aug</span>
-                        <span>Sep</span>
-                        <span>Oct</span>
-                        <span>Nov</span>
-                        <span>Dec</span>
-                      </div>
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('products')}
+                      className="text-xs font-bold text-forest-800 hover:text-forest-950 flex items-center gap-1 cursor-pointer"
+                    >
+                      <span>Full Products Catalog</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
 
-                {/* Right 4 Cols: Shop Advisor, Products Widget, Recent Activities */}
-                <div className="lg:col-span-4 space-y-6">
-                  
-                  {/* Shop Advisor Card */}
-                  <div className="bg-white rounded-3xl p-5 shadow-sm border border-stone-200/80">
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="text-xs font-extrabold text-stone-900">Shop Advisor</span>
-                      <button
-                        type="button"
-                        onClick={() => setActiveTab('orders')}
-                        className="text-xs font-bold text-forest-800 hover:text-forest-950 flex items-center gap-1 cursor-pointer"
-                      >
-                        <span>See All</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-
-                    <div className="p-3.5 rounded-2xl bg-forest-50/60 border border-forest-200/70">
-                      <p className="text-xs font-bold text-forest-900">Peak Express Hours Today</p>
-                      <p className="text-[11px] text-stone-600 mt-1 leading-relaxed">
-                        High volume expected between 4 PM and 7 PM. Ensure refrigerated totes are packed.
-                      </p>
-                    </div>
+                {/* Filter & Search Bar */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+                  <div className="relative flex-1 max-w-sm">
+                    <Search className="w-3.5 h-3.5 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      value={productSearch}
+                      onChange={(e) => setProductSearch(e.target.value)}
+                      placeholder="Search inventory items..."
+                      className="w-full h-9 pl-8 pr-3 text-xs bg-stone-50 border border-stone-200 rounded-xl text-stone-700 focus:outline-none focus:ring-1 focus:ring-forest-700"
+                    />
                   </div>
 
-                  {/* Products Overview Card */}
-                  <div className="bg-white rounded-3xl p-5 shadow-sm border border-stone-200/80">
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-xs font-extrabold text-stone-900">Products</span>
-                      <button
-                        type="button"
-                        onClick={() => setActiveTab('products')}
-                        className="text-xs font-bold text-forest-800 hover:text-forest-950 flex items-center gap-1 cursor-pointer"
-                      >
-                        <span>See All</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <select
+                      value={categoryFilter}
+                      onChange={(e) => setCategoryFilter(e.target.value)}
+                      className="h-9 px-3 rounded-xl border border-stone-200 text-xs text-stone-700 bg-stone-50 focus:outline-none cursor-pointer font-medium"
+                    >
+                      <option value="all">All Aisles</option>
+                      {CATEGORIES.map((c) => (
+                        <option key={c.id} value={c.slug}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
 
-                    <div className="space-y-3 text-xs">
-                      <div className="flex items-center justify-between py-1.5 border-b border-stone-100">
-                        <span className="text-stone-500 font-medium">Active listings</span>
-                        <span className="font-extrabold text-stone-900 tabular-nums font-mono">{inStockCount}</span>
-                      </div>
-                      <div className="flex items-center justify-between py-1.5 border-b border-stone-100">
-                        <span className="text-stone-500 font-medium">Low stock alerts</span>
-                        <span className="font-extrabold text-amber-700 tabular-nums font-mono">{lowStockCount}</span>
-                      </div>
-                      <div className="flex items-center justify-between py-1.5">
-                        <span className="text-stone-500 font-medium">Sold out</span>
-                        <span className="font-extrabold text-rose-600 tabular-nums font-mono">{outOfStockCount}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Recent Activities List */}
-                  <div className="bg-white rounded-3xl p-5 shadow-sm border border-stone-200/80">
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-xs font-extrabold text-stone-900">Recent Activities</span>
-                      <button
-                        type="button"
-                        onClick={() => setActiveTab('orders')}
-                        className="text-xs font-bold text-forest-800 hover:text-forest-950 flex items-center gap-1 cursor-pointer"
-                      >
-                        <span>See All</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-
-                    <div className="space-y-3">
-                      {orders.slice(0, 4).map((ord) => (
-                        <div key={ord.id} className="flex items-start gap-3 text-xs">
-                          <div className="w-7 h-7 rounded-full bg-forest-100 text-forest-800 flex items-center justify-center font-bold text-[10px] shrink-0">
-                            {ord.customerName.slice(0, 2).toUpperCase()}
-                          </div>
-                          <div className="min-w-0 flex-1">
-                            <p className="font-bold text-stone-800 truncate">
-                              {ord.customerName}
-                            </p>
-                            <p className="text-[11px] text-stone-400">
-                              Order {ord.id} • {ord.status}
-                            </p>
-                          </div>
-                          <span className="text-[10px] text-stone-400 shrink-0">{ord.createdAt}</span>
-                        </div>
+                    <div className="flex items-center gap-1 p-0.5 bg-stone-100 rounded-xl">
+                      {[
+                        { id: 'all', label: 'All' },
+                        { id: 'inStock', label: 'In Stock' },
+                        { id: 'outOfStock', label: 'Out of Stock' },
+                      ].map((s) => (
+                        <button
+                          key={s.id}
+                          type="button"
+                          onClick={() => setStockFilter(s.id as any)}
+                          className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                            stockFilter === s.id ? 'bg-white text-stone-900 shadow-xs font-bold' : 'text-stone-500'
+                          }`}
+                        >
+                          {s.label}
+                        </button>
                       ))}
                     </div>
                   </div>
-
                 </div>
 
+                {/* Table of Real Products */}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead>
+                      <tr className="text-stone-400 font-bold uppercase tracking-wider border-b border-stone-100 pb-3">
+                        <th className="pb-3 pl-2">Product</th>
+                        <th className="pb-3">Aisle</th>
+                        <th className="pb-3">Price</th>
+                        <th className="pb-3">Stock Status</th>
+                        <th className="pb-3">Rating</th>
+                        <th className="pb-3 text-right pr-2">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-stone-100 text-stone-700">
+                      {filteredProducts.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} className="py-12 text-center text-stone-400">
+                            No products found matching "{productSearch}".
+                          </td>
+                        </tr>
+                      ) : (
+                        filteredProducts.map((product) => (
+                          <tr key={product.id} className="hover:bg-stone-50/60 transition-colors">
+                            <td className="py-3 pl-2">
+                              <div className="flex items-center gap-3">
+                                <img
+                                  src={product.image}
+                                  alt={product.name}
+                                  className="w-10 h-10 rounded-xl object-cover border border-stone-200 shrink-0"
+                                />
+                                <div className="min-w-0">
+                                  <p className="font-bold text-stone-900 truncate max-w-[200px]">
+                                    {product.name}
+                                  </p>
+                                  <p className="text-[11px] text-stone-400">
+                                    {product.unit} {product.origin ? `• ${product.origin}` : ''}
+                                  </p>
+                                </div>
+                              </div>
+                            </td>
+
+                            <td className="py-3 font-medium text-stone-600">
+                              <span className="px-2 py-0.5 rounded-md bg-stone-100 text-stone-700 text-[11px] font-semibold">
+                                {product.category}
+                              </span>
+                            </td>
+
+                            <td className="py-3 font-bold text-forest-900 tabular-nums font-mono">
+                              {formatPrice(product.price)}
+                              {product.originalPrice && (
+                                <span className="block text-[10px] text-stone-400 line-through font-normal">
+                                  {formatPrice(product.originalPrice)}
+                                </span>
+                              )}
+                            </td>
+
+                            <td className="py-3">
+                              <button
+                                type="button"
+                                onClick={() => toggleStock(product.id)}
+                                className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold cursor-pointer transition-colors ${
+                                  product.inStock
+                                    ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
+                                    : 'bg-rose-100 text-rose-800 hover:bg-rose-200'
+                                }`}
+                                title="Click to toggle stock status"
+                              >
+                                <span className={`w-1.5 h-1.5 rounded-full ${product.inStock ? 'bg-emerald-600' : 'bg-rose-600'}`} />
+                                <span>{product.inStock ? 'In Stock' : 'Out of Stock'}</span>
+                              </button>
+                            </td>
+
+                            <td className="py-3 text-stone-500 font-semibold tabular-nums font-mono">
+                              <div className="flex items-center gap-1">
+                                <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+                                <span>{product.rating}</span>
+                                <span className="text-stone-400 text-[10px]">({product.reviewsCount})</span>
+                              </div>
+                            </td>
+
+                            <td className="py-3 text-right pr-2">
+                              <div className="flex items-center justify-end gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenEditModal(product)}
+                                  className="p-1.5 rounded-lg text-stone-400 hover:text-forest-900 hover:bg-forest-50 transition-colors cursor-pointer"
+                                  title="Edit Item"
+                                >
+                                  <Edit2 className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setDeletingProductId(product.id)}
+                                  className="p-1.5 rounded-lg text-stone-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                                  title="Delete Item"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </main>
           )}

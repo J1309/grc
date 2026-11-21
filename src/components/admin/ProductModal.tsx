@@ -146,7 +146,10 @@ export const ProductModal: React.FC<ProductModalProps> = ({
         ...formData,
       })
     } else {
-      onSave(formData)
+      onSave({
+        ...formData,
+        isLatest: true,
+      })
     }
     onClose()
   }

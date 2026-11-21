@@ -2,6 +2,8 @@ import React, { createContext, useContext, useState, useEffect } from 'react'
 import { Product, Order, OrderStatus, DeliveryUpdate } from '../types'
 import { PRODUCTS } from '../data/products'
 import { INITIAL_ORDERS } from '../data/orders'
+import { useConvexStatus } from './ConvexClientProvider'
+import { api } from '../../convex/_generated/api'
 
 interface StoreContextType {
   products: Product[]
@@ -26,10 +28,12 @@ interface StoreContextType {
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined)
 
-const PRODUCTS_STORAGE_KEY = 'grocery_cart_products_v2'
-const ORDERS_STORAGE_KEY = 'grocery_cart_orders_v2'
+const PRODUCTS_STORAGE_KEY = 'grocery_cart_products_v3'
+const ORDERS_STORAGE_KEY = 'grocery_cart_orders_v3'
 
 export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isConvexConfigured, convexClient } = useConvexStatus()
+
   // Sync view with URL hash (#admin / #storefront)
   const [currentView, setCurrentView] = useState<'storefront' | 'admin'>(() => {
     return window.location.hash === '#admin' ? 'admin' : 'storefront'
@@ -82,7 +86,86 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return INITIAL_ORDERS
   })
 
-  // Persist products
+  // Real-time synchronization with Convex Cloud Database
+  useEffect(() => {
+    if (!isConvexConfigured || !convexClient) return
+
+    try {
+      const productsWatch = convexClient.watchQuery(api.products.list, {})
+      const handleProductsUpdate = () => {
+        const remoteProducts = productsWatch.localQueryResult()
+        if (Array.isArray(remoteProducts)) {
+          if (remoteProducts.length > 0) {
+            const formatted: Product[] = remoteProducts.map((p: any) => ({
+              id: p.productId || p._id,
+              name: p.name,
+              category: p.category,
+              categorySlug: p.categorySlug,
+              price: p.price,
+              originalPrice: p.originalPrice,
+              discount: p.discount,
+              unit: p.unit,
+              image: p.image,
+              description: p.description,
+              inStock: p.inStock,
+              isLatest: p.isLatest ?? true,
+              isBestSeller: p.isBestSeller ?? false,
+              isSpecialOffer: p.isSpecialOffer ?? false,
+              origin: p.origin ?? 'Farm Direct',
+              rating: p.rating ?? 4.8,
+              reviewsCount: p.reviewsCount ?? 12,
+            }))
+            setProducts(formatted)
+          } else {
+            // Seed initial catalog to Convex cloud database so the store is pre-populated
+            convexClient
+              .mutation(api.products.seedInitialProducts, { items: PRODUCTS })
+              .catch(console.warn)
+          }
+        }
+      }
+      const unsubscribeProducts = productsWatch.onUpdate(handleProductsUpdate)
+      handleProductsUpdate()
+
+      const ordersWatch = convexClient.watchQuery(api.orders.list, {})
+      const handleOrdersUpdate = () => {
+        const remoteOrders = ordersWatch.localQueryResult()
+        if (Array.isArray(remoteOrders) && remoteOrders.length > 0) {
+          const formatted: Order[] = remoteOrders.map((o: any) => ({
+            id: o.orderId || o._id,
+            customerName: o.customerName,
+            customerEmail: o.customerEmail,
+            customerPhone: o.customerPhone,
+            address: o.address,
+            city: o.city,
+            zip: o.zip,
+            items: o.items,
+            itemsCount: o.itemsCount,
+            total: o.total,
+            deliverySlot: o.deliverySlot,
+            paymentMethod: o.paymentMethod,
+            status: o.status as OrderStatus,
+            createdAt: o.createdAt,
+            trackingNumber: o.trackingNumber,
+            estimatedDelivery: o.estimatedDelivery,
+            deliveryUpdates: o.deliveryUpdates || [],
+          }))
+          setOrders(formatted)
+        }
+      }
+      const unsubscribeOrders = ordersWatch.onUpdate(handleOrdersUpdate)
+      handleOrdersUpdate()
+
+      return () => {
+        unsubscribeProducts()
+        unsubscribeOrders()
+      }
+    } catch (e) {
+      console.warn('Convex live sync error:', e)
+    }
+  }, [isConvexConfigured, convexClient])
+
+  // Persist products to localStorage
   useEffect(() => {
     try {
       localStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(products))
@@ -91,7 +174,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, [products])
 
-  // Persist orders
+  // Persist orders to localStorage
   useEffect(() => {
     try {
       localStorage.setItem(ORDERS_STORAGE_KEY, JSON.stringify(orders))
@@ -100,15 +183,42 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   }, [orders])
 
-  // CRUD: Add Product
+  // CRUD: Add Product (Instantly visible in live website)
   const addProduct = (newProductData: Omit<Product, 'id'>): Product => {
     const newProduct: Product = {
       ...newProductData,
       id: 'prod-' + Date.now(),
+      isLatest: true,
       rating: newProductData.rating || 4.8,
       reviewsCount: newProductData.reviewsCount || 12,
     }
     setProducts((prev) => [newProduct, ...prev])
+
+    // Sync to Convex Cloud
+    if (isConvexConfigured && convexClient) {
+      convexClient
+        .mutation(api.products.add, {
+          productId: newProduct.id,
+          name: newProduct.name,
+          category: newProduct.category,
+          categorySlug: newProduct.categorySlug,
+          price: newProduct.price,
+          originalPrice: newProduct.originalPrice,
+          discount: newProduct.discount,
+          unit: newProduct.unit,
+          image: newProduct.image,
+          description: newProduct.description,
+          inStock: newProduct.inStock,
+          isLatest: true,
+          isBestSeller: newProduct.isBestSeller ?? false,
+          isSpecialOffer: newProduct.isSpecialOffer ?? false,
+          origin: newProduct.origin ?? 'Farm Direct',
+          rating: newProduct.rating,
+          reviewsCount: newProduct.reviewsCount,
+        })
+        .catch(console.error)
+    }
+
     return newProduct
   }
 
@@ -117,11 +227,23 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setProducts((prev) =>
       prev.map((item) => (item.id === id ? { ...item, ...updates } : item))
     )
+
+    if (isConvexConfigured && convexClient) {
+      convexClient
+        .mutation(api.products.update, { productId: id, updates })
+        .catch(console.error)
+    }
   }
 
-  // CRUD: Delete Product
+  // CRUD: Delete Product (Instantly removed from live website)
   const deleteProduct = (id: string) => {
     setProducts((prev) => prev.filter((item) => item.id !== id))
+
+    if (isConvexConfigured && convexClient) {
+      convexClient
+        .mutation(api.products.remove, { productId: id })
+        .catch(console.error)
+    }
   }
 
   // Fast stock toggle
@@ -129,6 +251,12 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setProducts((prev) =>
       prev.map((item) => (item.id === id ? { ...item, inStock: !item.inStock } : item))
     )
+
+    if (isConvexConfigured && convexClient) {
+      convexClient
+        .mutation(api.products.toggleStock, { productId: id })
+        .catch(console.error)
+    }
   }
 
   // Reset to original default data
@@ -160,6 +288,30 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       ],
     }
     setOrders((prev) => [orderWithTimeline, ...prev])
+
+    if (isConvexConfigured && convexClient) {
+      convexClient
+        .mutation(api.orders.add, {
+          orderId: orderWithTimeline.id,
+          customerName: orderWithTimeline.customerName,
+          customerEmail: orderWithTimeline.customerEmail,
+          customerPhone: orderWithTimeline.customerPhone,
+          address: orderWithTimeline.address,
+          city: orderWithTimeline.city,
+          zip: orderWithTimeline.zip,
+          items: orderWithTimeline.items,
+          itemsCount: orderWithTimeline.itemsCount,
+          total: orderWithTimeline.total,
+          deliverySlot: orderWithTimeline.deliverySlot,
+          paymentMethod: orderWithTimeline.paymentMethod,
+          status: orderWithTimeline.status,
+          createdAt: orderWithTimeline.createdAt,
+          trackingNumber: orderWithTimeline.trackingNumber,
+          estimatedDelivery: orderWithTimeline.estimatedDelivery,
+          deliveryUpdates: orderWithTimeline.deliveryUpdates,
+        })
+        .catch(console.error)
+    }
   }
 
   // Order Management: Update Order Status
@@ -181,6 +333,12 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         }
       })
     )
+
+    if (isConvexConfigured && convexClient) {
+      convexClient
+        .mutation(api.orders.updateStatus, { orderId: id, status })
+        .catch(console.error)
+    }
   }
 
   // Order Management: Add Delivery Update with custom note and courier details
@@ -209,6 +367,18 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         }
       })
     )
+
+    if (isConvexConfigured && convexClient) {
+      convexClient
+        .mutation(api.orders.addDeliveryUpdate, {
+          orderId,
+          status,
+          message: message.trim() || `Delivery status changed to ${status}`,
+          courierName,
+          location,
+        })
+        .catch(console.error)
+    }
   }
 
   return (
