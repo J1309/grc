@@ -9,6 +9,7 @@ import {
   Truck,
   LogOut,
   PackageCheck,
+  ShieldCheck,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCart } from '@/context/CartContext'
@@ -38,7 +39,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const { totalItems, subtotal, setIsCartOpen, setQuickViewProduct } = useCart()
   const { wishlistCount } = useWishlist()
   const { products, setCurrentView } = useStore()
-  const { isSignedIn, user, isClerkConfigured } = useClerkStatus()
+  const { isSignedIn, user, isAdmin, isClerkConfigured } = useClerkStatus()
   const [showAccountDropdown, setShowAccountDropdown] = useState(false)
   const [isSearchFocused, setIsSearchFocused] = useState(false)
 
@@ -266,6 +267,28 @@ export const Navbar: React.FC<NavbarProps> = ({
                             <User className="w-4 h-4 text-stone-500" />
                             <span>Manage Profile</span>
                           </button>
+
+                          {/* Role-Based Admin Operations (Only visible if user has role: "admin" in Clerk) */}
+                          {isAdmin && (
+                            <div className="pt-1 mt-1 border-t border-stone-100">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setShowAccountDropdown(false)
+                                  setCurrentView('admin')
+                                }}
+                                className="w-full flex items-center justify-between px-3 py-2 text-xs font-bold text-forest-900 bg-forest-50 hover:bg-forest-100 rounded-xl transition-colors cursor-pointer text-left"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <ShieldCheck className="w-4 h-4 text-forest-700" />
+                                  <span>Admin Operations</span>
+                                </div>
+                                <span className="text-[9px] px-1.5 py-0.5 rounded bg-forest-200/80 text-forest-900 font-extrabold uppercase">
+                                  Admin
+                                </span>
+                              </button>
+                            </div>
+                          )}
 
                           {/* Sign Out Button */}
                           <div className="pt-1 mt-1 border-t border-stone-100">

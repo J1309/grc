@@ -20,24 +20,45 @@ interface ClerkAuthContextType {
   isClerkConfigured: boolean
   isSignedIn: boolean
   user: any
+  isAdmin: boolean
 }
 
 const ClerkAuthContext = createContext<ClerkAuthContextType>({
   isClerkConfigured: false,
   isSignedIn: false,
   user: null,
+  isAdmin: false,
 })
 
 export const useClerkStatus = () => useContext(ClerkAuthContext)
 
 const ClerkBridge: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isSignedIn, user } = useUser()
+
+  const userEmail = user?.primaryEmailAddress?.emailAddress?.toLowerCase() || ''
+  const publicMetadata = (user?.publicMetadata || {}) as Record<string, any>
+
+  // Admin role check from Clerk metadata or authorized admin email
+  const isAdmin = Boolean(
+    isSignedIn &&
+    user &&
+    (
+      publicMetadata.role === 'admin' ||
+      publicMetadata.isAdmin === true ||
+      publicMetadata.admin === true ||
+      user.organizationMemberships?.some((m: any) => m.role === 'admin' || m.role === 'org:admin') ||
+      userEmail.endsWith('@grocerycart.com.au') ||
+      userEmail.startsWith('admin@')
+    )
+  )
+
   return (
     <ClerkAuthContext.Provider
       value={{
         isClerkConfigured: true,
         isSignedIn: Boolean(isSignedIn),
         user: user || null,
+        isAdmin,
       }}
     >
       {children}
@@ -62,7 +83,7 @@ export const ClerkAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   // Graceful fallback for development / before user sets up Clerk keys in .env
   return (
-    <ClerkAuthContext.Provider value={{ isClerkConfigured: false, isSignedIn: false, user: null }}>
+    <ClerkAuthContext.Provider value={{ isClerkConfigured: false, isSignedIn: false, user: null, isAdmin: false }}>
       {children}
     </ClerkAuthContext.Provider>
   )

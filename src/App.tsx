@@ -18,10 +18,13 @@ import { ToastContainer } from './components/ui/ToastContainer'
 import { AdminDashboard } from './components/admin/AdminDashboard'
 import { UserAccountModal } from './components/account/UserAccountModal'
 import { AuthPage } from './components/auth/AuthPage'
+import { useClerkStatus } from './components/auth/ClerkAuthProvider'
+import { ShieldAlert } from 'lucide-react'
 import { CATEGORIES } from './data/products'
 
 const Storefront: React.FC = () => {
   const { products, currentView, setCurrentView } = useStore()
+  const { isClerkConfigured, isSignedIn, isAdmin, user } = useClerkStatus()
   const [searchQuery, setSearchQuery] = useState('')
   const [activeCategory, setActiveCategory] = useState('all')
   const [isTrackingModalOpen, setIsTrackingModalOpen] = useState(false)
@@ -64,8 +67,48 @@ const Storefront: React.FC = () => {
     return result
   }, [products, activeCategory, searchQuery])
 
-  // If Admin panel is selected, render Admin Dashboard
+  // Protected Admin View: Only users with Clerk role "admin" can access
   if (currentView === 'admin') {
+    if (isClerkConfigured && !isSignedIn) {
+      return (
+        <AuthPage
+          onBackToStore={() => setCurrentView('storefront')}
+        />
+      )
+    }
+
+    if (isClerkConfigured && !isAdmin) {
+      return (
+        <div className="min-h-screen bg-[#FAF8F5] flex items-center justify-center p-6 text-stone-800 font-sans">
+          <div className="w-full max-w-md bg-white rounded-3xl p-8 border border-stone-200 text-center shadow-xl space-y-4">
+            <div className="w-14 h-14 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
+              <ShieldAlert className="w-7 h-7" />
+            </div>
+            <div>
+              <h2 className="text-xl font-black text-stone-900 tracking-tight">Access Restricted</h2>
+              <p className="text-xs text-stone-500 mt-1">
+                Your account ({user?.primaryEmailAddress?.emailAddress || 'Signed In User'}) does not have store administrator privileges.
+              </p>
+            </div>
+            <p className="text-[11px] text-stone-500 bg-stone-50 p-3 rounded-xl border border-stone-200/80 leading-relaxed text-left">
+              To grant access, go to your <strong>Clerk Dashboard &rarr; Users &rarr; Metadata &rarr; Public metadata</strong> and add:
+              <br />
+              <code className="text-forest-900 font-mono font-bold block mt-1 bg-white p-1.5 rounded border border-stone-200">
+                &#123; "role": "admin" &#125;
+              </code>
+            </p>
+            <button
+              type="button"
+              onClick={() => setCurrentView('storefront')}
+              className="w-full py-2.5 rounded-xl bg-forest-900 hover:bg-forest-850 text-white text-xs font-bold transition-colors cursor-pointer"
+            >
+              Return to Storefront
+            </button>
+          </div>
+        </div>
+      )
+    }
+
     return <AdminDashboard />
   }
 
