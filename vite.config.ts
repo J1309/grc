@@ -12,12 +12,21 @@ export default defineConfig(({ mode }) => {
     process.env.VITE_CONVEX_URL ||
     ''
 
+  const clerkKey =
+    env.VITE_CLERK_PUBLISHABLE_KEY ||
+    env.CLERK_PUBLISHABLE_KEY ||
+    process.env.VITE_CLERK_PUBLISHABLE_KEY ||
+    process.env.CLERK_PUBLISHABLE_KEY ||
+    ''
+
   return {
     plugins: [react()],
-    envPrefix: ['VITE_', 'CONVEX_'],
+    envPrefix: ['VITE_', 'CONVEX_', 'CLERK_'],
     define: {
       'import.meta.env.VITE_CONVEX_URL': JSON.stringify(convexUrl),
       'import.meta.env.CONVEX_URL': JSON.stringify(convexUrl),
+      'import.meta.env.VITE_CLERK_PUBLISHABLE_KEY': JSON.stringify(clerkKey),
+      'import.meta.env.CLERK_PUBLISHABLE_KEY': JSON.stringify(clerkKey),
     },
     resolve: {
       alias: {

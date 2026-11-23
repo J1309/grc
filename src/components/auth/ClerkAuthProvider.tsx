@@ -4,7 +4,11 @@ import { ClerkProvider } from '@clerk/clerk-react'
 // Check for Clerk Publishable Key in Vite environment
 const getClerkKey = (): string | undefined => {
   try {
-    return (import.meta as any).env?.VITE_CLERK_PUBLISHABLE_KEY
+    return (
+      (import.meta as any).env?.VITE_CLERK_PUBLISHABLE_KEY ||
+      (import.meta as any).env?.CLERK_PUBLISHABLE_KEY ||
+      undefined
+    )
   } catch (e) {
     return undefined
   }
