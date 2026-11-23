@@ -32,12 +32,14 @@ interface UserAccountModalProps {
   isOpen: boolean
   onClose: () => void
   initialOrderId?: string
+  initialTab?: 'tracking' | 'orders' | 'profile'
 }
 
 export const UserAccountModal: React.FC<UserAccountModalProps> = ({
   isOpen,
   onClose,
   initialOrderId,
+  initialTab,
 }) => {
   const { orders } = useStore()
   const { isClerkConfigured } = useClerkStatus()
@@ -48,7 +50,13 @@ export const UserAccountModal: React.FC<UserAccountModalProps> = ({
     return orders[0]?.id || ''
   })
   const [searchTrackingId, setSearchTrackingId] = useState('')
-  const [activeTab, setActiveTab] = useState<'tracking' | 'orders' | 'profile'>('tracking')
+  const [activeTab, setActiveTab] = useState<'tracking' | 'orders' | 'profile'>(initialTab || 'tracking')
+
+  React.useEffect(() => {
+    if (initialTab && isOpen) {
+      setActiveTab(initialTab)
+    }
+  }, [initialTab, isOpen])
 
   if (!isOpen) return null
 

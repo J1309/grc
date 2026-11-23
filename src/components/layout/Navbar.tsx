@@ -13,7 +13,7 @@ interface NavbarProps {
   setSearchQuery: (query: string) => void
   onSelectProduct?: (productId: string) => void
   onCategorySelect?: (categorySlug: string) => void
-  onOpenTracking?: (orderId?: string) => void
+  onOpenTracking?: (orderId?: string, tab?: 'tracking' | 'orders' | 'profile') => void
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -42,7 +42,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   return (
     <header className="sticky top-0 z-40 w-full max-w-full shadow-lg">
       {/* Main Emerald Green Header Bar */}
-      <div className="bg-forest-900 text-white px-2.5 sm:px-6 lg:px-8 py-2.5 sm:py-4 border-b border-forest-800/80 w-full max-w-full overflow-hidden">
+      <div className="bg-forest-900 text-white px-2.5 sm:px-6 lg:px-8 py-2.5 sm:py-4 border-b border-forest-800/80 w-full max-w-full relative">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-1.5 sm:gap-4 md:gap-8 min-w-0">
           
           {/* Bespoke Clean & Minimalist Brand Logo */}
@@ -146,7 +146,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
 
             {/* Account / Profile Dropdown Trigger */}
-            <div className="relative">
+            <div className="relative z-50">
               <button
                 type="button"
                 onClick={() => setShowAccountDropdown(!showAccountDropdown)}
@@ -161,55 +161,64 @@ export const Navbar: React.FC<NavbarProps> = ({
 
               <AnimatePresence>
                 {showAccountDropdown && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    className="absolute right-0 top-full mt-2 w-60 bg-white rounded-2xl shadow-xl border border-stone-200 p-2 z-50 text-stone-800"
-                  >
-                    <div className="px-3 py-2 border-b border-stone-100 mb-1">
-                      <p className="text-[11px] text-stone-400">Welcome to GroceryCart</p>
-                      <p className="text-xs font-bold text-stone-800">Customer Account</p>
-                    </div>
+                  <>
+                    {/* Fixed invisible backdrop to close dropdown when clicking outside */}
+                    <div
+                      className="fixed inset-0 z-40 bg-transparent"
+                      onClick={() => setShowAccountDropdown(false)}
+                    />
 
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowAccountDropdown(false)
-                        if (onOpenTracking) onOpenTracking()
-                      }}
-                      className="w-full flex items-center gap-2 px-3 py-2 text-xs text-stone-700 hover:bg-forest-50 hover:text-forest-900 rounded-xl transition-colors cursor-pointer text-left font-semibold"
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.95, y: -4 }}
+                      animate={{ opacity: 1, scale: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.95, y: -4 }}
+                      transition={{ duration: 0.15 }}
+                      className="absolute right-0 top-full mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-stone-200 p-2 z-50 text-stone-800"
                     >
-                      <Truck className="w-4 h-4 text-forest-700" />
-                      <span>Track Orders & Delivery</span>
-                    </button>
+                      <div className="px-3 py-2 border-b border-stone-100 mb-1">
+                        <p className="text-[11px] text-stone-400">Welcome to GroceryCart</p>
+                        <p className="text-xs font-bold text-stone-800">Customer Account</p>
+                      </div>
 
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setShowAccountDropdown(false)
-                        if (onOpenTracking) onOpenTracking()
-                      }}
-                      className="w-full flex items-center gap-2 px-3 py-2 text-xs text-stone-700 hover:bg-forest-50 hover:text-forest-900 rounded-xl transition-colors cursor-pointer text-left font-semibold"
-                    >
-                      <User className="w-4 h-4 text-stone-500" />
-                      <span>Sign In with Clerk</span>
-                    </button>
-
-                    <div className="pt-1 mt-1 border-t border-stone-100">
                       <button
                         type="button"
                         onClick={() => {
                           setShowAccountDropdown(false)
-                          setCurrentView('admin')
+                          if (onOpenTracking) onOpenTracking(undefined, 'tracking')
                         }}
-                        className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-forest-900 bg-forest-50 hover:bg-forest-100 rounded-xl transition-colors cursor-pointer text-left"
+                        className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-stone-700 hover:bg-forest-50 hover:text-forest-900 rounded-xl transition-colors cursor-pointer text-left font-semibold"
                       >
-                        <ShieldCheck className="w-3.5 h-3.5 text-forest-700" />
-                        <span>Admin Console</span>
+                        <Truck className="w-4 h-4 text-forest-700" />
+                        <span>Track Orders & Delivery</span>
                       </button>
-                    </div>
-                  </motion.div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowAccountDropdown(false)
+                          if (onOpenTracking) onOpenTracking(undefined, 'profile')
+                        }}
+                        className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-stone-700 hover:bg-forest-50 hover:text-forest-900 rounded-xl transition-colors cursor-pointer text-left font-semibold"
+                      >
+                        <User className="w-4 h-4 text-stone-500" />
+                        <span>Customer Profile & Sign In</span>
+                      </button>
+
+                      <div className="pt-1 mt-1 border-t border-stone-100">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setShowAccountDropdown(false)
+                            setCurrentView('admin')
+                          }}
+                          className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-forest-900 bg-forest-50 hover:bg-forest-100 rounded-xl transition-colors cursor-pointer text-left"
+                        >
+                          <ShieldCheck className="w-3.5 h-3.5 text-forest-700" />
+                          <span>Admin Console</span>
+                        </button>
+                      </div>
+                    </motion.div>
+                  </>
                 )}
               </AnimatePresence>
             </div>

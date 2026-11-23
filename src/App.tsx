@@ -25,14 +25,16 @@ const Storefront: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState('all')
   const [isTrackingModalOpen, setIsTrackingModalOpen] = useState(false)
   const [trackingOrderId, setTrackingOrderId] = useState<string | undefined>(undefined)
+  const [trackingInitialTab, setTrackingInitialTab] = useState<'tracking' | 'orders' | 'profile'>('tracking')
 
   const handleShopNow = () => {
     const el = document.getElementById('catalog-section')
     if (el) el.scrollIntoView({ behavior: 'smooth' })
   }
 
-  const handleOpenTracking = (orderId?: string) => {
+  const handleOpenTracking = (orderId?: string, tab: 'tracking' | 'orders' | 'profile' = 'tracking') => {
     setTrackingOrderId(orderId)
+    setTrackingInitialTab(tab)
     setIsTrackingModalOpen(true)
   }
 
@@ -147,6 +149,7 @@ const Storefront: React.FC = () => {
         isOpen={isTrackingModalOpen}
         onClose={() => setIsTrackingModalOpen(false)}
         initialOrderId={trackingOrderId}
+        initialTab={trackingInitialTab}
       />
 
       {/* Floating Action Notifications */}
