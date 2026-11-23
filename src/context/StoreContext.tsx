@@ -8,8 +8,8 @@ import { api } from '../../convex/_generated/api'
 interface StoreContextType {
   products: Product[]
   orders: Order[]
-  currentView: 'storefront' | 'admin'
-  setCurrentView: (view: 'storefront' | 'admin') => void
+  currentView: 'storefront' | 'admin' | 'auth'
+  setCurrentView: (view: 'storefront' | 'admin' | 'auth') => void
   addProduct: (product: Omit<Product, 'id'>) => Product
   updateProduct: (id: string, updates: Partial<Product>) => void
   deleteProduct: (id: string) => void
@@ -34,27 +34,52 @@ const ORDERS_STORAGE_KEY = 'grocery_cart_orders_v3'
 export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isConvexConfigured, convexClient } = useConvexStatus()
 
-  // Sync view with URL hash (#admin / #storefront)
-  const [currentView, setCurrentView] = useState<'storefront' | 'admin'>(() => {
-    return window.location.hash === '#admin' ? 'admin' : 'storefront'
+  // Sync view with URL hash (#admin / #auth / #storefront) or pathname
+  const [currentView, setCurrentView] = useState<'storefront' | 'admin' | 'auth'>(() => {
+    const hash = window.location.hash
+    const path = window.location.pathname
+    if (hash === '#admin' || path === '/admin') return 'admin'
+    if (hash === '#auth' || hash === '#sign-in' || hash === '#sign-up' || path === '/sign-in' || path === '/sign-up') return 'auth'
+    return 'storefront'
   })
 
   useEffect(() => {
     const handleHashChange = () => {
-      if (window.location.hash === '#admin') {
+      const hash = window.location.hash
+      if (hash === '#admin') {
         setCurrentView('admin')
-      } else if (window.location.hash === '#storefront' || window.location.hash === '') {
+      } else if (hash === '#auth' || hash === '#sign-in' || hash === '#sign-up') {
+        setCurrentView('auth')
+      } else if (hash === '#storefront' || hash === '') {
         setCurrentView('storefront')
       }
     }
 
-    window.addEventListener('hashchange', handleHashChange)
-    return () => window.removeEventListener('hashchange', handleHashChange)
-  }, [])
+    // Secret shortcut for store administrators: Ctrl + Shift + A (or Cmd + Shift + A)
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
+        e.preventDefault()
+        setViewWithHash(currentView === 'admin' ? 'storefront' : 'admin')
+      }
+    }
 
-  const setViewWithHash = (view: 'storefront' | 'admin') => {
+    window.addEventListener('hashchange', handleHashChange)
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange)
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [currentView])
+
+  const setViewWithHash = (view: 'storefront' | 'admin' | 'auth') => {
     setCurrentView(view)
-    window.location.hash = view === 'admin' ? '#admin' : '#storefront'
+    if (view === 'admin') {
+      window.location.hash = '#admin'
+    } else if (view === 'auth') {
+      window.location.hash = '#sign-in'
+    } else {
+      window.location.hash = ''
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 

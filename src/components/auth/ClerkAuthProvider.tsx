@@ -1,5 +1,5 @@
 import React, { createContext, useContext } from 'react'
-import { ClerkProvider } from '@clerk/clerk-react'
+import { ClerkProvider, useUser } from '@clerk/clerk-react'
 
 // Check for Clerk Publishable Key in Vite environment
 const getClerkKey = (): string | undefined => {
@@ -18,13 +18,32 @@ const CLERK_PUBLISHABLE_KEY = getClerkKey()
 
 interface ClerkAuthContextType {
   isClerkConfigured: boolean
+  isSignedIn: boolean
+  user: any
 }
 
 const ClerkAuthContext = createContext<ClerkAuthContextType>({
   isClerkConfigured: false,
+  isSignedIn: false,
+  user: null,
 })
 
 export const useClerkStatus = () => useContext(ClerkAuthContext)
+
+const ClerkBridge: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isSignedIn, user } = useUser()
+  return (
+    <ClerkAuthContext.Provider
+      value={{
+        isClerkConfigured: true,
+        isSignedIn: Boolean(isSignedIn),
+        user: user || null,
+      }}
+    >
+      {children}
+    </ClerkAuthContext.Provider>
+  )
+}
 
 export const ClerkAuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const isKeyValid = Boolean(
@@ -35,17 +54,15 @@ export const ClerkAuthProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   if (isKeyValid && CLERK_PUBLISHABLE_KEY) {
     return (
-      <ClerkAuthContext.Provider value={{ isClerkConfigured: true }}>
-        <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY} afterSignOutUrl="/">
-          {children}
-        </ClerkProvider>
-      </ClerkAuthContext.Provider>
+      <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY} afterSignOutUrl="/">
+        <ClerkBridge>{children}</ClerkBridge>
+      </ClerkProvider>
     )
   }
 
   // Graceful fallback for development / before user sets up Clerk keys in .env
   return (
-    <ClerkAuthContext.Provider value={{ isClerkConfigured: false }}>
+    <ClerkAuthContext.Provider value={{ isClerkConfigured: false, isSignedIn: false, user: null }}>
       {children}
     </ClerkAuthContext.Provider>
   )

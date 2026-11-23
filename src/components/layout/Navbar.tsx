@@ -1,9 +1,21 @@
 import React, { useState } from 'react'
-import { ShoppingCart, Heart, User, Sparkles, MapPin, Phone, ShieldCheck, Truck } from 'lucide-react'
+import {
+  ShoppingCart,
+  Heart,
+  User,
+  Sparkles,
+  MapPin,
+  Phone,
+  Truck,
+  LogOut,
+  PackageCheck,
+} from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCart } from '@/context/CartContext'
 import { useWishlist } from '@/context/WishlistContext'
 import { useStore } from '@/context/StoreContext'
+import { useClerkStatus } from '../auth/ClerkAuthProvider'
+import { SignOutButton } from '@clerk/clerk-react'
 import { InteractiveInput } from '../kokonutui/interactive-input'
 import { BrandLogo } from './BrandLogo'
 import { formatPrice } from '@/lib/utils'
@@ -26,6 +38,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const { totalItems, subtotal, setIsCartOpen, setQuickViewProduct } = useCart()
   const { wishlistCount } = useWishlist()
   const { products, setCurrentView } = useStore()
+  const { isSignedIn, user, isClerkConfigured } = useClerkStatus()
   const [showAccountDropdown, setShowAccountDropdown] = useState(false)
   const [isSearchFocused, setIsSearchFocused] = useState(false)
 
@@ -132,129 +145,159 @@ export const Navbar: React.FC<NavbarProps> = ({
             </AnimatePresence>
           </div>
 
-          {/* Right Action Icons: Track Orders, Account, Wishlist, Cart */}
-          <div className="flex items-center gap-1 sm:gap-2.5 shrink-0">
-            {/* Quick Track Order Pill (Desktop / Tablet) */}
-            <button
-              type="button"
-              onClick={() => onOpenTracking && onOpenTracking()}
-              className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-forest-800/90 hover:bg-forest-750 text-emerald-100 hover:text-white text-xs font-semibold border border-forest-700/80 transition-colors cursor-pointer"
-              title="Track Active Delivery"
-            >
-              <Truck className="w-3.5 h-3.5 text-harvest-400" />
-              <span>Track Orders</span>
-            </button>
-
-            {/* Account / Profile Dropdown Trigger */}
-            <div className="relative z-50">
+          {/* Right Action Icons: Signed Out vs Signed In */}
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+            {/* If NOT signed in: Clean Aesthetic Sign In Button */}
+            {!isSignedIn ? (
               <button
                 type="button"
-                onClick={() => setShowAccountDropdown(!showAccountDropdown)}
-                className="flex items-center gap-1.5 p-1 sm:px-2.5 sm:py-1.5 rounded-full hover:bg-forest-800/80 text-emerald-100 hover:text-white transition-colors cursor-pointer"
-                title="Customer Account & Orders"
+                onClick={() => setCurrentView('auth')}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-forest-800/90 hover:bg-forest-750 text-white text-xs font-bold border border-forest-700/80 transition-all cursor-pointer shadow-2xs"
+                title="Customer Sign In & Account"
               >
-                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-forest-800 border border-forest-700 flex items-center justify-center">
-                  <User className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-200" />
-                </div>
-                <span className="text-xs font-medium hidden lg:inline">Account</span>
+                <User className="w-3.5 h-3.5 text-harvest-400" />
+                <span>Sign In</span>
               </button>
+            ) : (
+              /* If SIGNED IN: Customer Account Menu & Wishlist */
+              <>
+                {/* Saved Wishlist (Only for signed-in users) */}
+                <a
+                  href="#wishlist"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    const target = document.getElementById('catalog-section')
+                    if (target) target.scrollIntoView({ behavior: 'smooth' })
+                  }}
+                  className="relative flex items-center gap-1.5 p-1 sm:px-2.5 sm:py-1.5 rounded-full hover:bg-forest-800/80 text-emerald-100 hover:text-white transition-colors"
+                  title="My Saved Wishlist"
+                >
+                  <div className="relative w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-forest-800/60 sm:bg-transparent flex items-center justify-center">
+                    <Heart className="w-4 h-4 text-emerald-100" />
+                    {wishlistCount > 0 && (
+                      <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-xs">
+                        {wishlistCount}
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-xs font-medium hidden lg:inline">Wishlist</span>
+                </a>
 
-              <AnimatePresence>
-                {showAccountDropdown && (
-                  <>
-                    {/* Fixed invisible backdrop to close dropdown when clicking outside */}
-                    <div
-                      className="fixed inset-0 z-40 bg-transparent"
-                      onClick={() => setShowAccountDropdown(false)}
-                    />
-
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95, y: -4 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      exit={{ opacity: 0, scale: 0.95, y: -4 }}
-                      transition={{ duration: 0.15 }}
-                      className="absolute right-0 top-full mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-stone-200 p-2 z-50 text-stone-800"
-                    >
-                      <div className="px-3 py-2 border-b border-stone-100 mb-1">
-                        <p className="text-[11px] text-stone-400">Welcome to GroceryCart</p>
-                        <p className="text-xs font-bold text-stone-800">Customer Account</p>
+                {/* Account / Profile Dropdown */}
+                <div className="relative z-50">
+                  <button
+                    type="button"
+                    onClick={() => setShowAccountDropdown(!showAccountDropdown)}
+                    className="flex items-center gap-1.5 p-1 sm:px-2.5 sm:py-1.5 rounded-full hover:bg-forest-800/80 text-emerald-100 hover:text-white transition-colors cursor-pointer"
+                    title="Customer Account Menu"
+                  >
+                    {user?.imageUrl ? (
+                      <img
+                        src={user.imageUrl}
+                        alt="Profile"
+                        className="w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-forest-600 object-cover"
+                      />
+                    ) : (
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-forest-800 border border-forest-700 flex items-center justify-center font-bold text-xs text-harvest-400">
+                        {user?.firstName ? user.firstName[0].toUpperCase() : 'U'}
                       </div>
+                    )}
+                    <span className="text-xs font-medium hidden lg:inline truncate max-w-[100px]">
+                      {user?.firstName || 'Account'}
+                    </span>
+                  </button>
 
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowAccountDropdown(false)
-                          if (onOpenTracking) onOpenTracking(undefined, 'tracking')
-                        }}
-                        className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-stone-700 hover:bg-forest-50 hover:text-forest-900 rounded-xl transition-colors cursor-pointer text-left font-semibold"
-                      >
-                        <Truck className="w-4 h-4 text-forest-700" />
-                        <span>Track Orders & Delivery</span>
-                      </button>
+                  <AnimatePresence>
+                    {showAccountDropdown && (
+                      <>
+                        <div
+                          className="fixed inset-0 z-40 bg-transparent"
+                          onClick={() => setShowAccountDropdown(false)}
+                        />
 
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowAccountDropdown(false)
-                          if (onOpenTracking) onOpenTracking(undefined, 'profile')
-                        }}
-                        className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-stone-700 hover:bg-forest-50 hover:text-forest-900 rounded-xl transition-colors cursor-pointer text-left font-semibold"
-                      >
-                        <User className="w-4 h-4 text-stone-500" />
-                        <span>Customer Profile & Sign In</span>
-                      </button>
-
-                      <div className="pt-1 mt-1 border-t border-stone-100">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setShowAccountDropdown(false)
-                            setCurrentView('admin')
-                          }}
-                          className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-bold text-forest-900 bg-forest-50 hover:bg-forest-100 rounded-xl transition-colors cursor-pointer text-left"
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.95, y: -4 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          exit={{ opacity: 0, scale: 0.95, y: -4 }}
+                          transition={{ duration: 0.15 }}
+                          className="absolute right-0 top-full mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-stone-200 p-2 z-50 text-stone-800"
                         >
-                          <ShieldCheck className="w-3.5 h-3.5 text-forest-700" />
-                          <span>Admin Console</span>
-                        </button>
-                      </div>
-                    </motion.div>
-                  </>
-                )}
-              </AnimatePresence>
-            </div>
+                          <div className="px-3 py-2 border-b border-stone-100 mb-1">
+                            <p className="text-xs font-bold text-stone-900 truncate">
+                              {user?.fullName || user?.primaryEmailAddress?.emailAddress || 'GroceryCart Member'}
+                            </p>
+                            <p className="text-[10px] text-stone-400 truncate">
+                              {user?.primaryEmailAddress?.emailAddress || 'Customer Account'}
+                            </p>
+                          </div>
 
-            {/* Wishlist */}
-            <a
-              href="#wishlist"
-              onClick={(e) => {
-                e.preventDefault()
-                const target = document.getElementById('catalog-section')
-                if (target) target.scrollIntoView({ behavior: 'smooth' })
-              }}
-              className="relative flex items-center gap-1.5 p-1 sm:px-2.5 sm:py-1.5 rounded-full hover:bg-forest-800/80 text-emerald-100 hover:text-white transition-colors"
-              title="Saved Wishlist"
-            >
-              <div className="relative w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-forest-800/60 sm:bg-transparent flex items-center justify-center">
-                <Heart className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-emerald-100" />
-                {wishlistCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-xs">
-                    {wishlistCount}
-                  </span>
-                )}
-              </div>
-              <span className="text-xs font-medium hidden lg:inline">Wishlist</span>
-            </a>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setShowAccountDropdown(false)
+                              if (onOpenTracking) onOpenTracking(undefined, 'tracking')
+                            }}
+                            className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-stone-700 hover:bg-forest-50 hover:text-forest-900 rounded-xl transition-colors cursor-pointer text-left font-semibold"
+                          >
+                            <Truck className="w-4 h-4 text-forest-700" />
+                            <span>Track Orders & Delivery</span>
+                          </button>
 
-            {/* Quick Admin Access Button (Desktop) */}
-            <button
-              type="button"
-              onClick={() => setCurrentView('admin')}
-              className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-forest-800 hover:bg-forest-750 text-white text-xs font-semibold border border-forest-700/80 transition-colors cursor-pointer shadow-xs"
-              title="Open Store Operations Console"
-            >
-              <ShieldCheck className="w-3.5 h-3.5 text-harvest-400" />
-              <span>Admin</span>
-            </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setShowAccountDropdown(false)
+                              if (onOpenTracking) onOpenTracking(undefined, 'orders')
+                            }}
+                            className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-stone-700 hover:bg-forest-50 hover:text-forest-900 rounded-xl transition-colors cursor-pointer text-left font-semibold"
+                          >
+                            <PackageCheck className="w-4 h-4 text-stone-500" />
+                            <span>My Orders & Invoices</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setShowAccountDropdown(false)
+                              if (onOpenTracking) onOpenTracking(undefined, 'profile')
+                            }}
+                            className="w-full flex items-center gap-2.5 px-3 py-2 text-xs text-stone-700 hover:bg-forest-50 hover:text-forest-900 rounded-xl transition-colors cursor-pointer text-left font-semibold"
+                          >
+                            <User className="w-4 h-4 text-stone-500" />
+                            <span>Manage Profile</span>
+                          </button>
+
+                          {/* Sign Out Button */}
+                          <div className="pt-1 mt-1 border-t border-stone-100">
+                            {isClerkConfigured ? (
+                              <SignOutButton>
+                                <button
+                                  type="button"
+                                  onClick={() => setShowAccountDropdown(false)}
+                                  className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-rose-700 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer text-left"
+                                >
+                                  <LogOut className="w-3.5 h-3.5 text-rose-600" />
+                                  <span>Sign Out</span>
+                                </button>
+                              </SignOutButton>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => setShowAccountDropdown(false)}
+                                className="w-full flex items-center gap-2 px-3 py-2 text-xs font-bold text-rose-700 hover:bg-rose-50 rounded-xl transition-colors cursor-pointer text-left"
+                              >
+                                <LogOut className="w-3.5 h-3.5 text-rose-600" />
+                                <span>Sign Out</span>
+                              </button>
+                            )}
+                          </div>
+                        </motion.div>
+                      </>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </>
+            )}
 
             {/* Cart Trigger Button (Compact on Mobile, Never Overflows) */}
             <motion.button

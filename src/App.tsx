@@ -17,6 +17,7 @@ import { QuickViewModal } from './components/product/QuickViewModal'
 import { ToastContainer } from './components/ui/ToastContainer'
 import { AdminDashboard } from './components/admin/AdminDashboard'
 import { UserAccountModal } from './components/account/UserAccountModal'
+import { AuthPage } from './components/auth/AuthPage'
 import { CATEGORIES } from './data/products'
 
 const Storefront: React.FC = () => {
@@ -66,6 +67,11 @@ const Storefront: React.FC = () => {
   // If Admin panel is selected, render Admin Dashboard
   if (currentView === 'admin') {
     return <AdminDashboard />
+  }
+
+  // If Auth page is selected, render dedicated aesthetic Auth Page
+  if (currentView === 'auth') {
+    return <AuthPage onBackToStore={() => setCurrentView('storefront')} />
   }
 
   return (
