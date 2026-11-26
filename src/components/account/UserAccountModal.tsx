@@ -42,12 +42,21 @@ export const UserAccountModal: React.FC<UserAccountModalProps> = ({
   initialTab,
 }) => {
   const { orders } = useStore()
-  const { isClerkConfigured } = useClerkStatus()
+  const { isClerkConfigured, user, isAdmin } = useClerkStatus()
+
+  const userEmail = user?.primaryEmailAddress?.emailAddress?.toLowerCase() || ''
+
+  // Customer only sees their own orders (unless they are a store admin)
+  const customerOrders = React.useMemo(() => {
+    if (isAdmin) return orders
+    if (!userEmail) return []
+    return orders.filter((o) => o.customerEmail?.toLowerCase() === userEmail)
+  }, [orders, isAdmin, userEmail])
 
   // Find initial order or default to the most recent one
   const [selectedOrderId, setSelectedOrderId] = useState<string>(() => {
     if (initialOrderId) return initialOrderId
-    return orders[0]?.id || ''
+    return ''
   })
   const [searchTrackingId, setSearchTrackingId] = useState('')
   const [activeTab, setActiveTab] = useState<'tracking' | 'orders' | 'profile'>(initialTab || 'tracking')
@@ -60,11 +69,20 @@ export const UserAccountModal: React.FC<UserAccountModalProps> = ({
 
   if (!isOpen) return null
 
-  const selectedOrder = orders.find(
-    (o) =>
-      o.id.toLowerCase() === selectedOrderId.toLowerCase() ||
-      (o.trackingNumber && o.trackingNumber.toLowerCase() === selectedOrderId.toLowerCase())
-  ) || orders[0]
+  const selectedOrder =
+    customerOrders.find(
+      (o) =>
+        o.id.toLowerCase() === selectedOrderId.toLowerCase() ||
+        (o.trackingNumber && o.trackingNumber.toLowerCase() === selectedOrderId.toLowerCase())
+    ) ||
+    (searchTrackingId.trim()
+      ? orders.find(
+          (o) =>
+            o.id.toLowerCase() === searchTrackingId.trim().toLowerCase() ||
+            (o.trackingNumber && o.trackingNumber.toLowerCase() === searchTrackingId.trim().toLowerCase())
+        )
+      : undefined) ||
+    customerOrders[0]
 
   const handleTrackSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -166,7 +184,7 @@ export const UserAccountModal: React.FC<UserAccountModalProps> = ({
                   : 'text-stone-600 hover:text-stone-900'
               }`}
             >
-              My Orders ({orders.length})
+              My Orders ({customerOrders.length})
             </button>
             <button
               type="button"
@@ -196,6 +214,19 @@ export const UserAccountModal: React.FC<UserAccountModalProps> = ({
 
         {/* Modal Scrollable Body */}
         <div className="p-5 sm:p-7 overflow-y-auto space-y-6 flex-1">
+          {/* TAB 1: ORDER TRACKING (Empty State when no order is selected) */}
+          {activeTab === 'tracking' && !selectedOrder && (
+            <div className="p-8 rounded-2xl bg-white border border-stone-200 text-center space-y-3">
+              <div className="w-12 h-12 rounded-full bg-stone-100 text-stone-400 flex items-center justify-center mx-auto">
+                <Package className="w-6 h-6" />
+              </div>
+              <h3 className="font-extrabold text-sm text-stone-900">No Active Deliveries Yet</h3>
+              <p className="text-xs text-stone-500 max-w-sm mx-auto">
+                Once you place an order, live courier milestones and tracking updates will appear right here. You can also look up an order by entering its Order ID above.
+              </p>
+            </div>
+          )}
+
           {/* TAB 1: ORDER TRACKING */}
           {activeTab === 'tracking' && selectedOrder && (
             <div className="space-y-6">
@@ -395,53 +426,63 @@ export const UserAccountModal: React.FC<UserAccountModalProps> = ({
           {activeTab === 'orders' && (
             <div className="space-y-3">
               <h3 className="text-xs font-bold uppercase tracking-wider text-stone-400 mb-2">
-                All Storefront Orders
+                Your Order History
               </h3>
-              <div className="space-y-2.5">
-                {orders.map((ord) => (
-                  <div
-                    key={ord.id}
-                    onClick={() => {
-                      setSelectedOrderId(ord.id)
-                      setActiveTab('tracking')
-                    }}
-                    className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
-                      selectedOrderId === ord.id
-                        ? 'bg-forest-50/70 border-forest-300 ring-1 ring-forest-300'
-                        : 'bg-white border-stone-200 hover:border-stone-300'
-                    }`}
-                  >
-                    <div>
-                      <div className="flex items-center gap-2 mb-0.5">
-                        <span className="font-extrabold text-xs text-stone-900">{ord.id}</span>
-                        <span
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                            ord.status === 'Completed'
-                              ? 'bg-emerald-100 text-emerald-800'
-                              : ord.status === 'Out for Delivery'
-                              ? 'bg-amber-100 text-amber-900'
-                              : 'bg-stone-100 text-stone-700'
-                          }`}
-                        >
-                          {ord.status}
-                        </span>
-                      </div>
-                      <p className="text-xs text-stone-500">
-                        {ord.items.length} items • Total: {formatPrice(ord.total)}
-                      </p>
-                      <p className="text-[11px] text-stone-400">{ord.createdAt}</p>
-                    </div>
-
-                    <button
-                      type="button"
-                      className="px-3 py-1.5 rounded-xl bg-forest-900 text-white text-xs font-bold hover:bg-forest-800 transition-colors flex items-center gap-1 cursor-pointer shrink-0"
+              {customerOrders.length === 0 ? (
+                <div className="p-8 rounded-2xl bg-white border border-stone-200 text-center space-y-2">
+                  <Package className="w-6 h-6 text-stone-400 mx-auto" />
+                  <p className="text-xs font-bold text-stone-800">You haven't placed any orders yet</p>
+                  <p className="text-[11px] text-stone-400">
+                    Your completed and active grocery orders will be saved to your account history here.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2.5">
+                  {customerOrders.map((ord) => (
+                    <div
+                      key={ord.id}
+                      onClick={() => {
+                        setSelectedOrderId(ord.id)
+                        setActiveTab('tracking')
+                      }}
+                      className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 ${
+                        selectedOrderId === ord.id
+                          ? 'bg-forest-50/70 border-forest-300 ring-1 ring-forest-300'
+                          : 'bg-white border-stone-200 hover:border-stone-300'
+                      }`}
                     >
-                      <span>Track</span>
-                      <ChevronRight className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                ))}
-              </div>
+                      <div>
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <span className="font-extrabold text-xs text-stone-900">{ord.id}</span>
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                              ord.status === 'Completed'
+                                ? 'bg-emerald-100 text-emerald-800'
+                                : ord.status === 'Out for Delivery'
+                                ? 'bg-amber-100 text-amber-900'
+                                : 'bg-stone-100 text-stone-700'
+                            }`}
+                          >
+                            {ord.status}
+                          </span>
+                        </div>
+                        <p className="text-xs text-stone-500">
+                          {ord.items.length} items • Total: {formatPrice(ord.total)}
+                        </p>
+                        <p className="text-[11px] text-stone-400">{ord.createdAt}</p>
+                      </div>
+
+                      <button
+                        type="button"
+                        className="px-3 py-1.5 rounded-xl bg-forest-900 text-white text-xs font-bold hover:bg-forest-800 transition-colors flex items-center gap-1 cursor-pointer shrink-0"
+                      >
+                        <span>Track</span>
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 

@@ -61,12 +61,20 @@ export const AdminDashboard: React.FC = () => {
     addDeliveryUpdate,
     resetProductsToDefault,
   } = useStore()
-  const { isClerkConfigured } = useClerkStatus()
+  const { isClerkConfigured, user } = useClerkStatus()
   const { isConvexConfigured } = useConvexStatus()
+
+  const adminDisplayName = user?.fullName || user?.firstName || 'Store Administrator'
+  const adminEmail = user?.primaryEmailAddress?.emailAddress || 'admin@grocerycart.com.au'
+  const adminInitials = adminDisplayName
+    .split(' ')
+    .map((n: string) => n[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase() || 'GC'
 
   // STRICT SEPARATE SECTIONS: Overview, Products, Orders, Account (No "CRUD" label)
   const [activeTab, setActiveTab] = useState<'overview' | 'products' | 'orders' | 'account'>('overview')
-  const [timeRange, setTimeRange] = useState<'day' | 'week' | 'month' | 'year'>('month')
 
   // Search & Filter state for Products
   const [productSearch, setProductSearch] = useState('')
@@ -85,18 +93,13 @@ export const AdminDashboard: React.FC = () => {
   // Dispatch / Delivery Update Drawer State
   const [dispatchOrder, setDispatchOrder] = useState<Order | null>(null)
   const [newUpdateStatus, setNewUpdateStatus] = useState<OrderStatus>('Out for Delivery')
-  const [courierName, setCourierName] = useState('Marcus R. (Van #4)')
-  const [dispatchLocation, setDispatchLocation] = useState('Central Hub Station B')
+  const [courierName, setCourierName] = useState('Courier Van #1')
+  const [dispatchLocation, setDispatchLocation] = useState('Australia Distribution Hub')
   const [customUpdateNote, setCustomUpdateNote] = useState('')
 
   // Derived real operational metrics (NO fake financial data)
   const inStockCount = useMemo(() => products.filter((p) => p.inStock).length, [products])
   const outOfStockCount = useMemo(() => products.filter((p) => !p.inStock).length, [products])
-  const lowStockCount = useMemo(() => products.filter((p) => !p.inStock || p.price > 15).length, [products])
-
-  const pendingOrders = useMemo(() => orders.filter((o) => o.status === 'Pending' || o.status === 'Packing'), [orders])
-  const outForDeliveryOrders = useMemo(() => orders.filter((o) => o.status === 'Out for Delivery'), [orders])
-  const completedOrders = useMemo(() => orders.filter((o) => o.status === 'Completed'), [orders])
 
   // Filtered products list for Products view
   const filteredProducts = useMemo(() => {
@@ -311,11 +314,11 @@ export const AdminDashboard: React.FC = () => {
             <div className="p-2.5 rounded-2xl bg-stone-50 border border-stone-200/80 flex items-center justify-between">
               <div className="flex items-center gap-2.5 min-w-0">
                 <div className="w-8 h-8 rounded-full bg-forest-900 text-harvest-400 font-black text-xs flex items-center justify-center shrink-0">
-                  SA
+                  {adminInitials}
                 </div>
                 <div className="min-w-0 text-left">
-                  <p className="text-xs font-bold text-stone-900 truncate">Sajibur Rahman</p>
-                  <p className="text-[10px] text-stone-400 truncate">admin@grocerycart.com</p>
+                  <p className="text-xs font-bold text-stone-900 truncate">{adminDisplayName}</p>
+                  <p className="text-[10px] text-stone-400 truncate">{adminEmail}</p>
                 </div>
               </div>
               <ChevronDown className="w-3.5 h-3.5 text-stone-400 shrink-0" />
@@ -332,10 +335,10 @@ export const AdminDashboard: React.FC = () => {
           <header className="px-5 sm:px-8 py-4 sm:py-5 bg-white/70 backdrop-blur-md border-b border-stone-200/70 flex items-center justify-between sticky top-0 z-20">
             <div>
               <h1 className="text-xl sm:text-2xl font-black text-stone-900 tracking-tight">
-                Hello, Orbix!
+                GroceryCart Operations
               </h1>
               <p className="text-xs text-stone-400 font-medium">
-                Store Operations & Live Grocery Fulfillment
+                Live Store Inventory & Order Fulfillment Console
               </p>
             </div>
 
@@ -1008,10 +1011,10 @@ export const AdminDashboard: React.FC = () => {
                 
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 rounded-full bg-forest-900 text-harvest-400 font-black text-lg flex items-center justify-center">
-                    SA
+                    {adminInitials}
                   </div>
                   <div>
-                    <h4 className="font-extrabold text-sm text-stone-900">Sajibur Rahman</h4>
+                    <h4 className="font-extrabold text-sm text-stone-900">{adminDisplayName}</h4>
                     <p className="text-xs text-stone-400">Lead Operations Administrator</p>
                     <span className="inline-block mt-1 px-2 py-0.5 rounded bg-forest-100 text-forest-900 text-[10px] font-bold">
                       Full Store Access
@@ -1027,7 +1030,7 @@ export const AdminDashboard: React.FC = () => {
                     <input
                       type="email"
                       readOnly
-                      value="admin@grocerycart.com"
+                      value={adminEmail}
                       className="w-full h-10 px-3 rounded-xl border border-stone-200 text-xs bg-stone-50 text-stone-700"
                     />
                   </div>
@@ -1038,7 +1041,7 @@ export const AdminDashboard: React.FC = () => {
                     <input
                       type="text"
                       readOnly
-                      value="New York Central Hub #1"
+                      value="Australia Distribution Hub"
                       className="w-full h-10 px-3 rounded-xl border border-stone-200 text-xs bg-stone-50 text-stone-700"
                     />
                   </div>

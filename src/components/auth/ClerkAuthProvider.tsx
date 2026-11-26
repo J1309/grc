@@ -35,10 +35,9 @@ export const useClerkStatus = () => useContext(ClerkAuthContext)
 const ClerkBridge: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isSignedIn, user } = useUser()
 
-  const userEmail = user?.primaryEmailAddress?.emailAddress?.toLowerCase() || ''
   const publicMetadata = (user?.publicMetadata || {}) as Record<string, any>
 
-  // Admin role check from Clerk metadata or authorized admin email
+  // Admin role check strictly from verified Clerk metadata or organization membership
   const isAdmin = Boolean(
     isSignedIn &&
     user &&
@@ -46,9 +45,7 @@ const ClerkBridge: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       publicMetadata.role === 'admin' ||
       publicMetadata.isAdmin === true ||
       publicMetadata.admin === true ||
-      user.organizationMemberships?.some((m: any) => m.role === 'admin' || m.role === 'org:admin') ||
-      userEmail.endsWith('@grocerycart.com.au') ||
-      userEmail.startsWith('admin@')
+      user.organizationMemberships?.some((m: any) => m.role === 'admin' || m.role === 'org:admin')
     )
   )
 

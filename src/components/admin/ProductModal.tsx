@@ -114,9 +114,38 @@ export const ProductModal: React.FC<ProductModalProps> = ({
     const reader = new FileReader()
     reader.onload = (uploadEvent) => {
       const dataUrl = uploadEvent.target?.result as string
-      if (dataUrl) {
+      if (!dataUrl) return
+
+      // Compress and resize uploaded image to max 800x800 WebP (~35KB) so it fits Convex & localStorage limits
+      const img = new Image()
+      img.onload = () => {
+        const MAX_DIM = 800
+        let { width, height } = img
+        if (width > MAX_DIM || height > MAX_DIM) {
+          if (width > height) {
+            height = Math.round((height * MAX_DIM) / width)
+            width = MAX_DIM
+          } else {
+            width = Math.round((width * MAX_DIM) / height)
+            height = MAX_DIM
+          }
+        }
+        const canvas = document.createElement('canvas')
+        canvas.width = width
+        canvas.height = height
+        const ctx = canvas.getContext('2d')
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height)
+          const compressedUrl = canvas.toDataURL('image/webp', 0.82)
+          setFormData((prev) => ({ ...prev, image: compressedUrl }))
+        } else {
+          setFormData((prev) => ({ ...prev, image: dataUrl }))
+        }
+      }
+      img.onerror = () => {
         setFormData((prev) => ({ ...prev, image: dataUrl }))
       }
+      img.src = dataUrl
     }
     reader.readAsDataURL(file)
   }

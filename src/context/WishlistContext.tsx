@@ -15,8 +15,8 @@ export const WishlistProvider: React.FC<{ children: ReactNode }> = ({ children }
   const { addToast } = useCart()
   const [wishlistIds, setWishlistIds] = useState<string[]>(() => {
     try {
-      const saved = localStorage.getItem('grocerycart_wishlist')
-      return saved ? JSON.parse(saved) : ['prod-1', 'prod-4']
+      const saved = localStorage.getItem('grocerycart_wishlist_v2')
+      return saved ? JSON.parse(saved) : []
     } catch {
       return []
     }
@@ -24,7 +24,7 @@ export const WishlistProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   useEffect(() => {
     try {
-      localStorage.setItem('grocerycart_wishlist', JSON.stringify(wishlistIds))
+      localStorage.setItem('grocerycart_wishlist_v2', JSON.stringify(wishlistIds))
     } catch (e) {
       console.error('Failed to save wishlist to localStorage', e)
     }

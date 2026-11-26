@@ -33,28 +33,8 @@ const FREE_SHIPPING_THRESHOLD = 35.0
 export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [cart, setCart] = useState<CartItem[]>(() => {
     try {
-      const saved = localStorage.getItem('grocerycart_items')
-      return saved ? JSON.parse(saved) : [
-        // Preload 1 sample item so user immediately feels the live cart
-        {
-          product: {
-            id: 'prod-1',
-            name: 'Premium Aged Basmati Rice',
-            category: 'Rice',
-            categorySlug: 'rice',
-            price: 24.99,
-            originalPrice: 29.99,
-            discount: '15% Off',
-            rating: 4.8,
-            reviewsCount: 120,
-            unit: '1 kg bag',
-            image: 'https://images.unsplash.com/photo-1586201375761-83865001e31c?auto=format&fit=crop&w=600&q=80',
-            description: 'Long grain extra-fluffy Royal Himalayan aged basmati rice.',
-            inStock: true,
-          },
-          quantity: 1
-        }
-      ]
+      const saved = localStorage.getItem('grocerycart_items_v2')
+      return saved ? JSON.parse(saved) : []
     } catch {
       return []
     }
@@ -69,7 +49,7 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   useEffect(() => {
     try {
-      localStorage.setItem('grocerycart_items', JSON.stringify(cart))
+      localStorage.setItem('grocerycart_items_v2', JSON.stringify(cart))
     } catch (e) {
       console.error('Failed to save cart to localStorage', e)
     }
@@ -88,6 +68,10 @@ export const CartProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }
 
   const addToCart = (product: Product, quantity = 1) => {
+    if (!product.inStock) {
+      addToast('Out of Stock', `${product.name} is currently unavailable`, 'info')
+      return
+    }
     setCart((prev) => {
       const existing = prev.find((item) => item.product.id === product.id)
       if (existing) {

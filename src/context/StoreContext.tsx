@@ -29,7 +29,7 @@ interface StoreContextType {
 const StoreContext = createContext<StoreContextType | undefined>(undefined)
 
 const PRODUCTS_STORAGE_KEY = 'grocery_cart_products_v3'
-const ORDERS_STORAGE_KEY = 'grocery_cart_orders_v3'
+const ORDERS_STORAGE_KEY = 'grocery_cart_orders_v4'
 
 export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isConvexConfigured, convexClient } = useConvexStatus()
@@ -55,21 +55,11 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
     }
 
-    // Secret shortcut for store administrators: Ctrl + Shift + A (or Cmd + Shift + A)
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
-        e.preventDefault()
-        setViewWithHash(currentView === 'admin' ? 'storefront' : 'admin')
-      }
-    }
-
     window.addEventListener('hashchange', handleHashChange)
-    window.addEventListener('keydown', handleKeyDown)
     return () => {
       window.removeEventListener('hashchange', handleHashChange)
-      window.removeEventListener('keydown', handleKeyDown)
     }
-  }, [currentView])
+  }, [])
 
   const setViewWithHash = (view: 'storefront' | 'admin' | 'auth') => {
     setCurrentView(view)

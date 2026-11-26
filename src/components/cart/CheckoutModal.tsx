@@ -1,27 +1,39 @@
-import React, { useState } from 'react'
-import { X, CheckCircle, Truck, ShieldCheck, CreditCard, Banknote, Clock, ArrowRight } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { X, CheckCircle, Truck, CreditCard, Banknote, Clock, ArrowRight } from 'lucide-react'
 import { motion } from 'framer-motion'
 import confetti from 'canvas-confetti'
 import { useCart } from '@/context/CartContext'
 import { useStore } from '@/context/StoreContext'
+import { useClerkStatus } from '@/components/auth/ClerkAuthProvider'
 import { formatPrice } from '@/lib/utils'
 
 export const CheckoutModal: React.FC = () => {
-  const { isCheckoutOpen, setIsCheckoutOpen, cart, subtotal, discount, deliveryFee, total, clearCart } = useCart()
+  const { isCheckoutOpen, setIsCheckoutOpen, cart, total, clearCart } = useCart()
   const { addOrder } = useStore()
+  const { user } = useClerkStatus()
 
   const [step, setStep] = useState<'details' | 'success'>('details')
   const [formData, setFormData] = useState({
-    name: 'Alex Johnson',
-    email: 'alex.johnson@example.com',
-    phone: '+1 (555) 234-5678',
-    address: '742 Evergreen Terrace, Apt 4B',
-    city: 'New York',
-    zip: '10001',
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    city: '',
+    zip: '',
     deliverySlot: 'Express 2-Hour Slot (Today)',
-    paymentMethod: 'card',
+    paymentMethod: 'card_on_delivery',
   })
   const [orderId, setOrderId] = useState('')
+
+  useEffect(() => {
+    if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        name: prev.name || user.fullName || user.firstName || '',
+        email: prev.email || user.primaryEmailAddress?.emailAddress || '',
+      }))
+    }
+  }, [user, isCheckoutOpen])
 
   if (!isCheckoutOpen) return null
 
@@ -34,12 +46,12 @@ export const CheckoutModal: React.FC = () => {
     // Add to real store orders for Admin Panel tracking
     addOrder({
       id: generatedId,
-      customerName: formData.name,
-      customerEmail: formData.email,
-      customerPhone: formData.phone,
-      address: formData.address,
-      city: formData.city,
-      zip: formData.zip,
+      customerName: formData.name.trim(),
+      customerEmail: formData.email.trim(),
+      customerPhone: formData.phone.trim(),
+      address: formData.address.trim(),
+      city: formData.city.trim(),
+      zip: formData.zip.trim(),
       items: cart.map((i) => ({
         productName: i.product.name,
         quantity: i.quantity,
@@ -50,9 +62,17 @@ export const CheckoutModal: React.FC = () => {
       itemsCount: cart.reduce((sum, i) => sum + i.quantity, 0),
       total: total,
       deliverySlot: formData.deliverySlot,
-      paymentMethod: formData.paymentMethod === 'card' ? 'Credit Card' : 'Cash on Delivery',
+      paymentMethod:
+        formData.paymentMethod === 'card_on_delivery'
+          ? 'Card on Delivery (EFTPOS)'
+          : 'Cash on Delivery',
       status: 'Pending',
-      createdAt: 'Just now',
+      createdAt: new Date().toLocaleDateString('en-AU', {
+        day: 'numeric',
+        month: 'short',
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
     })
 
     try {
@@ -126,9 +146,10 @@ export const CheckoutModal: React.FC = () => {
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                 <div>
-                  <label className="block text-stone-600 mb-1 font-medium">Full Name</label>
+                  <label className="block text-stone-600 mb-1 font-medium">Full Name *</label>
                   <input
                     type="text"
+                    placeholder="Enter your full name"
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     className="w-full h-9 px-3 rounded-lg border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-forest-800"
@@ -136,19 +157,32 @@ export const CheckoutModal: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-stone-600 mb-1 font-medium">Phone Number</label>
+                  <label className="block text-stone-600 mb-1 font-medium">Email Address *</label>
                   <input
-                    type="text"
+                    type="email"
+                    placeholder="you@example.com"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className="w-full h-9 px-3 rounded-lg border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-forest-800"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-stone-600 mb-1 font-medium">Phone Number *</label>
+                  <input
+                    type="tel"
+                    placeholder="e.g. 0412 345 678"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     className="w-full h-9 px-3 rounded-lg border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-forest-800"
                     required
                   />
                 </div>
-                <div className="sm:col-span-2">
-                  <label className="block text-stone-600 mb-1 font-medium">Street Address</label>
+                <div>
+                  <label className="block text-stone-600 mb-1 font-medium">Street Address *</label>
                   <input
                     type="text"
+                    placeholder="Unit / Street number and name"
                     value={formData.address}
                     onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                     className="w-full h-9 px-3 rounded-lg border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-forest-800"
@@ -156,9 +190,10 @@ export const CheckoutModal: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-stone-600 mb-1 font-medium">City</label>
+                  <label className="block text-stone-600 mb-1 font-medium">Suburb / City *</label>
                   <input
                     type="text"
+                    placeholder="Suburb or City"
                     value={formData.city}
                     onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                     className="w-full h-9 px-3 rounded-lg border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-forest-800"
@@ -166,9 +201,10 @@ export const CheckoutModal: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-stone-600 mb-1 font-medium">Zip Code</label>
+                  <label className="block text-stone-600 mb-1 font-medium">Postcode *</label>
                   <input
                     type="text"
+                    placeholder="e.g. 2000"
                     value={formData.zip}
                     onChange={(e) => setFormData({ ...formData, zip: e.target.value })}
                     className="w-full h-9 px-3 rounded-lg border border-stone-200 bg-stone-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-forest-800"
@@ -214,20 +250,20 @@ export const CheckoutModal: React.FC = () => {
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <button
                   type="button"
-                  onClick={() => setFormData({ ...formData, paymentMethod: 'card' })}
-                  className={`p-3 rounded-xl border flex items-center gap-2.5 transition-all ${
-                    formData.paymentMethod === 'card'
+                  onClick={() => setFormData({ ...formData, paymentMethod: 'card_on_delivery' })}
+                  className={`p-3 rounded-xl border flex items-center gap-2.5 transition-all cursor-pointer ${
+                    formData.paymentMethod === 'card_on_delivery'
                       ? 'border-forest-800 bg-forest-50/80 text-forest-900 font-bold'
                       : 'border-stone-200 text-stone-600 hover:bg-stone-50'
                   }`}
                 >
                   <CreditCard className="w-4 h-4 text-forest-700" />
-                  <span>Card / Apple Pay</span>
+                  <span>Card on Delivery (EFTPOS)</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setFormData({ ...formData, paymentMethod: 'cod' })}
-                  className={`p-3 rounded-xl border flex items-center gap-2.5 transition-all ${
+                  className={`p-3 rounded-xl border flex items-center gap-2.5 transition-all cursor-pointer ${
                     formData.paymentMethod === 'cod'
                       ? 'border-forest-800 bg-forest-50/80 text-forest-900 font-bold'
                       : 'border-stone-200 text-stone-600 hover:bg-stone-50'
@@ -283,7 +319,7 @@ export const CheckoutModal: React.FC = () => {
               </div>
               <div className="flex justify-between text-stone-500">
                 <span>Payment:</span>
-                <strong className="text-stone-800">{formData.paymentMethod === 'card' ? 'Online Card' : 'Cash on Delivery'}</strong>
+                <strong className="text-stone-800">{formData.paymentMethod === 'card_on_delivery' ? 'Card on Delivery (EFTPOS)' : 'Cash on Delivery'}</strong>
               </div>
               <div className="flex justify-between text-stone-500">
                 <span>Estimated Arrival:</span>

@@ -169,34 +169,46 @@ export const QuickViewModal: React.FC = () => {
 
           {/* Stepper & Add to Cart button */}
           <div className="pt-2 flex items-center gap-3">
-            <div className="flex items-center border border-stone-300 rounded-xl overflow-hidden bg-stone-50">
+            {!quickViewProduct.inStock ? (
               <button
                 type="button"
-                onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="w-10 h-10 flex items-center justify-center text-stone-600 hover:bg-stone-200 transition-colors"
+                disabled
+                className="w-full py-3 rounded-full bg-stone-200 text-stone-500 font-bold text-xs cursor-not-allowed"
               >
-                <Minus className="w-4 h-4" />
+                Currently Out of Stock
               </button>
-              <span className="w-10 text-center text-sm font-bold text-stone-800 tabular-nums">
-                {quantity}
-              </span>
-              <button
-                type="button"
-                onClick={() => setQuantity(quantity + 1)}
-                className="w-10 h-10 flex items-center justify-center text-stone-600 hover:bg-stone-200 transition-colors"
-              >
-                <Plus className="w-4 h-4" />
-              </button>
-            </div>
+            ) : (
+              <>
+                <div className="flex items-center border border-stone-300 rounded-xl overflow-hidden bg-stone-50">
+                  <button
+                    type="button"
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    className="w-10 h-10 flex items-center justify-center text-stone-600 hover:bg-stone-200 transition-colors"
+                  >
+                    <Minus className="w-4 h-4" />
+                  </button>
+                  <span className="w-10 text-center text-sm font-bold text-stone-800 tabular-nums">
+                    {quantity}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setQuantity(quantity + 1)}
+                    className="w-10 h-10 flex items-center justify-center text-stone-600 hover:bg-stone-200 transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
 
-            <ParticleButton
-              variant="primary"
-              onClick={handleAddToCart}
-              className="flex-1 py-3 bg-forest-900 hover:bg-forest-850 text-white font-bold"
-              icon={<ShoppingBag className="w-4 h-4" />}
-            >
-              Add {quantity} to Cart ({formatPrice(quickViewProduct.price * quantity)})
-            </ParticleButton>
+                <ParticleButton
+                  variant="primary"
+                  onClick={handleAddToCart}
+                  className="flex-1 py-3 bg-forest-900 hover:bg-forest-850 text-white font-bold"
+                  icon={<ShoppingBag className="w-4 h-4" />}
+                >
+                  Add {quantity} to Cart ({formatPrice(quickViewProduct.price * quantity)})
+                </ParticleButton>
+              </>
+            )}
           </div>
         </div>
 

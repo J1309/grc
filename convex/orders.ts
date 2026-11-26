@@ -1,11 +1,26 @@
 import { query, mutation } from './_generated/server'
 import { v } from 'convex/values'
 
-// Get all orders
+async function checkOrderWriteAccess(ctx: { auth: { getUserIdentity: () => Promise<any> } }) {
+  const identity = await ctx.auth.getUserIdentity()
+  if (process.env.CLERK_JWT_ISSUER_DOMAIN && !identity) {
+    throw new Error('Unauthorized: Authentication required to update order dispatch.')
+  }
+  return identity
+}
+
+// Get orders (optionally scoped by customerEmail for non-admin customers)
 export const list = query({
-  args: {},
-  handler: async (ctx) => {
-    return await ctx.db.query('orders').order('desc').collect()
+  args: {
+    customerEmail: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const allOrders = await ctx.db.query('orders').order('desc').collect()
+    if (args.customerEmail) {
+      const normalized = args.customerEmail.trim().toLowerCase()
+      return allOrders.filter((o) => o.customerEmail.toLowerCase() === normalized)
+    }
+    return allOrders
   },
 })
 
@@ -61,6 +76,7 @@ export const updateStatus = mutation({
     status: v.string(),
   },
   handler: async (ctx, args) => {
+    await checkOrderWriteAccess(ctx)
     const existing = await ctx.db
       .query('orders')
       .withIndex('by_orderId', (q) => q.eq('orderId', args.orderId))
@@ -69,10 +85,10 @@ export const updateStatus = mutation({
     if (existing) {
       const newUpdate = {
         id: 'upd-' + Date.now(),
-        timestamp: 'Just now',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         status: args.status,
         message: `Order status updated to ${args.status}`,
-        location: 'Store Hub',
+        location: 'Store Fulfillment Hub',
       }
       const updates = [newUpdate, ...(existing.deliveryUpdates || [])]
       await ctx.db.patch(existing._id, {
@@ -93,6 +109,7 @@ export const addDeliveryUpdate = mutation({
     location: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    await checkOrderWriteAccess(ctx)
     const existing = await ctx.db
       .query('orders')
       .withIndex('by_orderId', (q) => q.eq('orderId', args.orderId))
@@ -101,11 +118,11 @@ export const addDeliveryUpdate = mutation({
     if (existing) {
       const newUpdate = {
         id: 'upd-' + Date.now(),
-        timestamp: 'Just now',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         status: args.status,
         message: args.message,
         courierName: args.courierName,
-        location: args.location || 'Central Distribution Hub',
+        location: args.location || 'Distribution Hub',
       }
       const updates = [newUpdate, ...(existing.deliveryUpdates || [])]
       await ctx.db.patch(existing._id, {

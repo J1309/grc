@@ -1,5 +1,8 @@
 import React, { createContext, useContext, useMemo } from 'react'
 import { ConvexProvider, ConvexReactClient } from 'convex/react'
+import { ConvexProviderWithClerk } from 'convex/react-clerk'
+import { useAuth } from '@clerk/clerk-react'
+import { useClerkStatus } from '../components/auth/ClerkAuthProvider'
 
 const getConvexUrl = (): string | undefined => {
   try {
@@ -27,6 +30,7 @@ const ConvexStatusContext = createContext<ConvexStatusContextType>({
 export const useConvexStatus = () => useContext(ConvexStatusContext)
 
 export const ConvexClientProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isClerkConfigured } = useClerkStatus()
   const convexUrl = getConvexUrl()
 
   const isValidUrl = Boolean(
@@ -48,21 +52,27 @@ export const ConvexClientProvider: React.FC<{ children: React.ReactNode }> = ({ 
   }, [isValidUrl, convexUrl])
 
   if (client) {
-    return (
-      <ConvexProvider client={client}>
-        <ConvexStatusContext.Provider
-          value={{ isConvexConfigured: true, convexUrl, convexClient: client }}
-        >
-          {children}
-        </ConvexStatusContext.Provider>
-      </ConvexProvider>
+    const content = (
+      <ConvexStatusContext.Provider
+        value={{ isConvexConfigured: true, convexUrl, convexClient: client }}
+      >
+        {children}
+      </ConvexStatusContext.Provider>
     )
+
+    if (isClerkConfigured) {
+      return (
+        <ConvexProviderWithClerk client={client} useAuth={useAuth}>
+          {content}
+        </ConvexProviderWithClerk>
+      )
+    }
+
+    return <ConvexProvider client={client}>{content}</ConvexProvider>
   }
 
   return (
-    <ConvexStatusContext.Provider
-      value={{ isConvexConfigured: false, convexUrl, convexClient: null }}
-    >
+    <ConvexStatusContext.Provider value={{ isConvexConfigured: false, convexClient: null }}>
       {children}
     </ConvexStatusContext.Provider>
   )

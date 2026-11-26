@@ -20,9 +20,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   return (
     <div className="group relative bg-white rounded-xl sm:rounded-2xl border border-stone-200/90 shadow-card-soft hover:shadow-card-hover transition-all duration-300 flex flex-col overflow-hidden">
       
-      {/* Top Bar inside Card: Discount Pill + Wishlist button */}
+      {/* Top Bar inside Card: Discount / Out-of-Stock Pill + Wishlist button */}
       <div className="absolute top-2 left-2 right-2 sm:top-3 sm:left-3 sm:right-3 z-10 flex items-center justify-between pointer-events-none">
-        {product.discount ? (
+        {!product.inStock ? (
+          <span className="pointer-events-auto inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-extrabold bg-rose-600 text-white shadow-xs tracking-tight">
+            Sold Out
+          </span>
+        ) : product.discount ? (
           <span className="pointer-events-auto inline-flex items-center px-2 sm:px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-extrabold bg-harvest-400 text-stone-900 shadow-xs tracking-tight">
             {product.discount}
           </span>
@@ -119,7 +123,15 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </div>
 
           {/* Add to Cart or Stepper */}
-          {cartItem ? (
+          {!product.inStock ? (
+            <button
+              type="button"
+              disabled
+              className="w-full py-1.5 sm:py-2.5 px-2 sm:px-3 rounded-lg sm:rounded-xl border border-stone-200 bg-stone-100 text-stone-400 font-semibold text-[11px] sm:text-xs flex items-center justify-center cursor-not-allowed"
+            >
+              <span>Out of Stock</span>
+            </button>
+          ) : cartItem ? (
             <div className="flex items-center justify-between bg-forest-50 border border-forest-200 rounded-lg sm:rounded-xl p-0.5 sm:p-1">
               <button
                 type="button"
